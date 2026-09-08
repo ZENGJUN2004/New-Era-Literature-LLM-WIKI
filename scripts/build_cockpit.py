@@ -76,6 +76,25 @@ for md_path in WIKI.rglob("*.md"):
     if tl_section:
         for tl in re.findall(r"\*\*(\d{4}(?:-\d{2}(?:-\d{2})?)?)\*\*[：:]\s*(.+)", tl_section.group(1)):
             timeline.append({"date": tl[0], "text": tl[1].strip()[:200]})
+    # 提取来源清单（url + pubdate 成对）
+    sources_list = []
+    for blk in re.findall(r"^\s*- id:.*?(?=\n\s*- id:|\Z)", fm, re.M | re.S):
+        u = re.search(r"url:\s*(http\S+)", blk)
+        if u:
+            p = re.search(r"pubdate:\s*(\d{4}-\d{2}-\d{2})", blk)
+            sources_list.append({"url": u.group(1).strip(), "pubdate": p.group(1) if p else ""})
+    # 提取正文小节（二级/三级标题及其要点，用于综述生成）
+    sections = []
+    BODY_SKIP = {"关键信息", "时间线", "关联", "来源", "详细内容"}
+    if m:
+        body_part = text[m.end():]
+        for sm in re.finditer(r"^#{2,3}\s+([^\n]+)\n(.*?)(?=^#{2,3}\s+|\Z)", body_part, re.M | re.S):
+            st = sm.group(1).strip()
+            if st in BODY_SKIP:
+                continue
+            sb = sm.group(2).strip()
+            if sb:
+                sections.append({"title": st, "body": sb[:400]})
     pages.append({
         "file": str(rel).replace("\\", "/"),
         "type": tp,
@@ -88,6 +107,8 @@ for md_path in WIKI.rglob("*.md"):
         "timeline": timeline,
         "desc": desc,
         "related": related,
+        "sources_list": sources_list,
+        "sections": sections,
     })
 
 print(f"扫描到 {len(pages)} 个 wiki 页面")
@@ -642,6 +663,85 @@ for ev in high_value_events[:60]:
 # 按日期排序
 BIG_EVENTS.sort(key=lambda x: x["date"] or "9999", reverse=True)
 
+# ── 4b. 综述引擎：为重要现象与大事记生成结构化综述 ────────────────
+REVIEW_DEBATE_KW = ("争鸣", "研讨", "观点", "反思", "质疑", "访谈", "对话", "座谈会", "论坛", "讨论", "论", "评")
+
+def _page_review(page):
+    src = list(page.get("sources_list") or [])
+    tl = sorted(page.get("timeline") or [], key=lambda t: t["date"])
+    debates = [s for s in (page.get("sections") or [])
+               if any(k in s["title"] for k in REVIEW_DEBATE_KW)]
+    return src, tl, debates
+
+def build_review_for(name, description, keywords, wiki_file):
+    """基于 wiki 页面集合生成综述结构"""
+    matches = []
+    if wiki_file:
+        w = [p for p in pages if p["file"] == wiki_file]
+        if w:
+            matches = [w[0]]
+    if not matches:
+        for p in pages:
+            s = p["name"] + " " + " ".join(p["tags"]) + " " + p["desc"]
+            if any(k and k in s for k in keywords):
+                matches.append(p)
+                if len(matches) >= 40:
+                    break
+    src_all, tl_all, debate_all, rel = [], [], [], []
+    for p in matches:
+        s, t, d = _page_review(p)
+        src_all.extend(s)
+        tl_all.extend(p.get("timeline") or [])
+        debate_all.extend(d)
+        rel.append({"file": p["file"], "name": p["name"], "cat": p["cat"]})
+    tl_all.sort(key=lambda x: x["date"])
+    # 去重来源/关联
+    seen_url, seen_f = set(), set()
+    src_uniq, rel_uniq = [], []
+    for s in src_all:
+        if s["url"] not in seen_url:
+            seen_url.add(s["url"])
+            src_uniq.append(s)
+    for r in rel:
+        if r["file"] not in seen_f:
+            seen_f.add(r["file"])
+            rel_uniq.append(r)
+    return {
+        "name": name,
+        "overview": description,
+        "evolution": tl_all[:60],
+        "debate": debate_all[:15],
+        "sources": src_uniq,
+        "related": rel_uniq,
+    }
+
+for ph in PHENOMENA:
+    ph["review"] = build_review_for(ph["name"], ph["description"], ph.get("keywords", []), ph.get("wiki", ""))
+
+for ev in BIG_EVENTS:
+    ev["review"] = build_review_for(ev["name"], ev["description"], [ev["name"]], ev.get("wiki", ""))
+
+# ── 4c. 类别索引：人物/作品/主题/概念/流派/机构/事件 ───────────────
+CATEGORY_ORDER = ["人物", "作品", "主题", "概念", "流派", "机构", "事件"]
+categories = {c: [] for c in CATEGORY_ORDER}
+for p in pages:
+    cat = p["cat"] if p["cat"] in CATEGORY_ORDER else "事件"
+    categories[cat].append({
+        "file": p["file"],
+        "name": p["name"],
+        "type": p["type"],
+        "tags": p["tags"],
+        "desc": p["desc"][:200],
+        "src_count": p["src_count"],
+        "min_pd": p["min_pd"],
+        "max_pd": p["max_pd"],
+        "timeline": p["timeline"][:20],
+        "sources": (p["sources_list"] or [])[:15],
+        "related": p["related"],
+    })
+for c in CATEGORY_ORDER:
+    categories[c].sort(key=lambda x: -x["src_count"])
+
 # ── 5. 生成 HTML ────────────────────────────────────────────────────
 
 # 构建时间线摘要：按年月聚合页面
@@ -882,7 +982,7 @@ body {{
   padding: 16px;
   border-top: 3px solid var(--accent);
   transition: transform 0.2s, box-shadow 0.2s;
-  cursor: default;
+  cursor: pointer;
 }}
 .phenomenon-card:hover {{
   transform: translateY(-2px);
@@ -996,6 +1096,260 @@ body {{
 /* ── 关系图谱 ── */
 .graph-section {{
   margin-bottom: 30px;
+}}
+
+/* ── 类别导航 ── */
+.cat-nav {{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding: 10px 0;
+  border-bottom: 1px solid #1a2055;
+}}
+.cat-chip {{
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #2a3075;
+  background: #111540;
+  color: #90a4ae;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}}
+.cat-chip:hover {{
+  background: #1a2055;
+  color: #e0e0e0;
+  border-color: #4fc3f7;
+}}
+.cat-chip.active {{
+  background: #1565c0;
+  color: #fff;
+  border-color: #1565c0;
+}}
+.cat-chip .cat-count {{
+  font-size: 11px;
+  opacity: 0.7;
+  margin-left: 4px;
+}}
+
+/* ── 遮罩面板 ── */
+.overlay {{
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+}}
+.overlay.open {{ display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; overflow-y: auto; }}
+.overlay-panel {{
+  background: #0d1033;
+  border: 1px solid #2a3075;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 960px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 28px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}}
+.overlay-close {{
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: none;
+  border: none;
+  color: #78909c;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}}
+.overlay-close:hover {{ color: #fff; background: rgba(255,255,255,0.08); }}
+.overlay-title {{
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 6px;
+}}
+.overlay-subtitle {{
+  font-size: 13px;
+  color: #78909c;
+  margin-bottom: 18px;
+}}
+
+/* ── 搜索框 ── */
+.search-box {{
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}}
+.search-box input {{
+  flex: 1;
+  background: #151a3a;
+  border: 1px solid #2a3075;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #e0e0e0;
+  font-size: 14px;
+  outline: none;
+}}
+.search-box input:focus {{ border-color: #4fc3f7; }}
+.search-box input::placeholder {{ color: #546e7a; }}
+
+/* ── 列表项 ── */
+.entity-list {{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}}
+.entity-item {{
+  background: #111540;
+  border: 1px solid #1e2555;
+  border-radius: 8px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+}}
+.entity-item:hover {{
+  background: #151a3a;
+  border-color: #4fc3f7;
+  transform: translateX(3px);
+}}
+.entity-item .ei-name {{
+  font-size: 15px;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin-bottom: 4px;
+}}
+.entity-item .ei-tags {{
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}}
+.entity-item .ei-tag {{
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(79,195,247,0.1);
+  color: #4fc3f7;
+}}
+.entity-item .ei-desc {{
+  font-size: 12px;
+  color: #78909c;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}}
+.entity-item .ei-meta {{
+  font-size: 11px;
+  color: #546e7a;
+  margin-top: 6px;
+}}
+.list-count {{
+  font-size: 12px;
+  color: #546e7a;
+  margin-bottom: 12px;
+}}
+
+/* ── 详情/综述面板 ── */
+.review-section {{
+  margin-bottom: 20px;
+}}
+.review-section h3 {{
+  font-size: 16px;
+  font-weight: 600;
+  color: #4fc3f7;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #1a2055;
+}}
+.review-overview {{
+  font-size: 14px;
+  color: #b0bec5;
+  line-height: 1.7;
+}}
+.tl-item {{
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #151a3a;
+}}
+.tl-date {{
+  min-width: 100px;
+  font-size: 13px;
+  color: #4fc3f7;
+  font-family: "SF Mono", "Fira Code", monospace;
+}}
+.tl-text {{
+  font-size: 13px;
+  color: #b0bec5;
+  line-height: 1.5;
+}}
+.debate-item {{
+  padding: 10px 14px;
+  background: #111540;
+  border-left: 3px solid #ff9800;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 8px;
+}}
+.debate-item .deb-title {{
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffd93d;
+  margin-bottom: 2px;
+}}
+.debate-item .deb-body {{
+  font-size: 12px;
+  color: #90a4ae;
+  line-height: 1.5;
+}}
+.src-item {{
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #0d1033;
+  font-size: 12px;
+  align-items: baseline;
+}}
+.src-url {{
+  color: #81d4fa;
+  text-decoration: none;
+  word-break: break-all;
+}}
+.src-url:hover {{ text-decoration: underline; }}
+.src-date {{
+  color: #546e7a;
+  white-space: nowrap;
+  flex-shrink: 0;
+}}
+.rel-grid {{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}}
+.rel-chip {{
+  padding: 8px 12px;
+  background: #111540;
+  border: 1px solid #1e2555;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #b0bec5;
+  cursor: pointer;
+  transition: all 0.15s;
+}}
+.rel-chip:hover {{ border-color: #4fc3f7; color: #e0e0e0; }}
+.rel-chip .rc-cat {{
+  font-size: 10px;
+  color: #546e7a;
+  margin-left: 4px;
 }}
 .graph-container {{
   background: #111540;
@@ -1123,6 +1477,33 @@ body {{
     <label>至</label>
     <select id="toYear"></select>
     <button onclick="applyCustomRange()" style="background:#1565c0;color:#fff;border:none;padding:5px 12px;border-radius:4px;cursor:pointer;font-size:13px;">确定</button>
+  </div>
+</div>
+
+<!-- 类别导航 -->
+<div class="cat-nav" id="catNav"></div>
+
+<!-- 搜索面板 -->
+<div class="overlay" id="searchOverlay">
+  <div class="overlay-panel">
+    <button class="overlay-close" onclick="closeSearch()">×</button>
+    <div class="overlay-title" id="searchTitle"></div>
+    <div class="overlay-subtitle" id="searchSub"></div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="输入关键词搜索…" oninput="filterSearch()">
+    </div>
+    <div class="list-count" id="searchCount"></div>
+    <div class="entity-list" id="searchList"></div>
+  </div>
+</div>
+
+<!-- 综述/详情面板 -->
+<div class="overlay" id="reviewOverlay">
+  <div class="overlay-panel">
+    <button class="overlay-close" onclick="closeReview()">×</button>
+    <div class="overlay-title" id="reviewTitle"></div>
+    <div class="overlay-subtitle" id="reviewSub"></div>
+    <div id="reviewContent"></div>
   </div>
 </div>
 
@@ -1265,9 +1646,9 @@ function renderChart(months) {{
 
 function renderPhenomena() {{
   let html = '';
-  DATA.phenomena.forEach(p => {{
+  DATA.phenomena.forEach((p, i) => {{
     html += `
-      <div class="phenomenon-card" style="--accent:${{p.color}}">
+      <div class="phenomenon-card" style="--accent:${{p.color}}" onclick="openPhenomenon(${{i}})" title="点击查看综述">
         <div class="ph-head">
           <span class="ph-name">${{esc(p.name)}}</span>
           <span class="ph-cat">${{esc(p.category)}}</span>
@@ -1276,6 +1657,7 @@ function renderPhenomena() {{
         <div class="ph-meta">
           <span>📄 ${{p.source_count}} 条来源</span>
           <span>📅 ${{p.min_pd || '?'}} ~ ${{p.max_pd || '?'}}</span>
+          <span style="color:#4fc3f7;">📖 查看综述 →</span>
         </div>
       </div>`;
   }});
@@ -1285,6 +1667,7 @@ function renderPhenomena() {{
 function renderEvents(events) {{
   let html = '';
   events.forEach(ev => {{
+    const eidx = DATA.events.findIndex(e => e.name === ev.name);
     let awardHtml = '';
     if (ev.awards && ev.awards.length) {{
       awardHtml = '<div style="margin-top:10px;">';
@@ -1303,11 +1686,11 @@ function renderEvents(events) {{
       awardHtml += '</div>';
     }}
     html += `
-      <div class="event-card">
+      <div class="event-card" onclick="openEvent(${{eidx}})" title="点击查看综述" style="cursor:pointer;">
         <div class="ev-date">${{esc(ev.date || '日期待定')}}</div>
         <div class="ev-body">
           <h3>${{esc(ev.name)}}</h3>
-          <div class="ev-cat">${{esc(ev.category)}} · ${{ev.source_count}} 条来源</div>
+          <div class="ev-cat">${{esc(ev.category)}} · ${{ev.source_count}} 条来源 · <span style="color:#4fc3f7;">📖 查看综述 →</span></div>
           <div class="ev-desc">${{esc(ev.description)}}</div>
           ${{awardHtml}}
         </div>
@@ -1329,6 +1712,219 @@ function render() {{
   const events = filterByMonth(months);
   renderEvents(events);
 }}
+
+// ── 类别导航 ──
+const CAT_ORDER = ['人物', '作品', '主题', '概念', '流派', '机构', '事件'];
+const CAT_ICONS = {{'人物': '👤', '作品': '📖', '主题': '🧭', '概念': '💡', '流派': '🏛', '机构': '🏢', '事件': '📅'}};
+let currentSearchCat = '';
+
+function renderCatNav() {{
+  let html = '<span style="font-size:13px;color:#78909c;align-self:center;">分类检索：</span>';
+  html += `<span class="cat-chip" onclick="openSearch(this, '')">🔍 全部 <span class="cat-count">${{totalPageCount()}}</span></span>`;
+  CAT_ORDER.forEach(c => {{
+    html += `<span class="cat-chip" onclick="openSearch(this, '${{c}}')">${{CAT_ICONS[c] || ''}} ${{c}} <span class="cat-count">${{(DATA.categories[c] || []).length}}</span></span>`;
+  }});
+  document.getElementById('catNav').innerHTML = html;
+}}
+
+// ── 搜索面板 ──
+let searchCache = null;
+function openSearch(chip, cat) {{
+  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+  if (chip) chip.classList.add('active');
+  currentSearchCat = cat;
+  searchCache = null;
+  document.getElementById('searchInput').value = '';
+  if (cat === '') {{
+    document.getElementById('searchTitle').textContent = '全库检索';
+    document.getElementById('searchSub').textContent = '检索全部 ' + totalPageCount() + ' 个重要文学实体';
+  }} else {{
+    document.getElementById('searchTitle').textContent = (CAT_ICONS[cat] || '') + ' ' + cat + ' 检索';
+    const n = (DATA.categories[cat] || []).length;
+    document.getElementById('searchSub').textContent = '共 ' + n + ' 个实体，点击查看详情或输入关键词筛选';
+  }}
+  document.getElementById('searchOverlay').classList.add('open');
+  filterSearch();
+  document.getElementById('searchInput').focus();
+}}
+function totalPageCount() {{
+  let n = 0;
+  CAT_ORDER.forEach(c => n += (DATA.categories[c] || []).length);
+  return n;
+}}
+function closeSearch() {{
+  document.getElementById('searchOverlay').classList.remove('open');
+}}
+function filterSearch() {{
+  if (!searchCache) {{
+    searchCache = [];
+    if (currentSearchCat === '') {{
+      CAT_ORDER.forEach(c => {{
+        (DATA.categories[c] || []).forEach(it => searchCache.push(Object.assign({{_cat: c}}, it)));
+      }});
+    }} else {{
+      (DATA.categories[currentSearchCat] || []).forEach(it => searchCache.push(Object.assign({{_cat: currentSearchCat}}, it)));
+    }}
+  }}
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  let list = searchCache;
+  if (q) {{
+    list = searchCache.filter(it => {{
+      const hay = (it.name || '') + ' ' + (it.desc || '') + ' ' + (it.tags || []).join(' ');
+      return hay.toLowerCase().indexOf(q) >= 0;
+    }});
+  }}
+  document.getElementById('searchCount').textContent = '匹配 ' + list.length + ' 条';
+  let html = '';
+  list.slice(0, 200).forEach((it, i) => {{
+    const tagsHtml = (it.tags || []).slice(0, 4).map(t => `<span class="ei-tag">${{esc(t)}}</span>`).join('');
+    html += `
+      <div class="entity-item" onclick="openEntity('${{esc(it._cat)}}', '${{esc(it.file)}}')">
+        <div class="ei-name">${{esc(it.name)}} <span style="font-size:11px;color:#546e7a;">[${{esc(it._cat)}}]</span></div>
+        <div class="ei-tags">${{tagsHtml}}</div>
+        <div class="ei-desc">${{esc(it.desc)}}</div>
+        <div class="ei-meta">📄 ${{it.src_count || 0}} 条来源${{it.min_pd ? ' · 📅 ' + it.min_pd + ' ~ ' + it.max_pd : ''}}</div>
+      </div>`;
+  }});
+  if (!list.length) html = '<div style="color:#607d8b;padding:30px;text-align:center;">未找到匹配实体，尝试其他关键词</div>';
+  if (list.length > 200) html += '<div style="color:#546e7a;padding:10px;text-align:center;">…仅显示前 200 条，请用关键词进一步筛选</div>';
+  document.getElementById('searchList').innerHTML = html;
+}}
+
+// ── 综述/详情面板 ──
+function openReview(title, subtitle, html) {{
+  document.getElementById('reviewTitle').textContent = title;
+  document.getElementById('reviewSub').textContent = subtitle || '';
+  document.getElementById('reviewContent').innerHTML = html;
+  document.getElementById('reviewOverlay').classList.add('open');
+  document.getElementById('reviewOverlay').scrollTop = 0;
+}}
+function closeReview() {{
+  document.getElementById('reviewOverlay').classList.remove('open');
+}}
+
+function reviewHtml(name, category, review, extra) {{
+  const r = review || {{}};
+  let h = '';
+  // 导语/概述
+  h += '<div class="review-section"><h3>📌 现象概述</h3><div class="review-overview">' + esc(r.overview || '暂无概述') + '</div></div>';
+  // 时间线（演变脉络）
+  const tl = r.evolution || [];
+  if (tl.length) {{
+    h += '<div class="review-section"><h3>🕒 来龙去脉（时间线）</h3>';
+    tl.slice(0, 40).forEach(t => {{
+      h += `<div class="tl-item"><div class="tl-date">${{esc(t.date)}}</div><div class="tl-text">${{esc(t.text)}}</div></div>`;
+    }});
+    h += '</div>';
+  }}
+  // 争鸣/理论问题
+  const dbs = r.debate || [];
+  if (dbs.length) {{
+    h += '<div class="review-section"><h3>⚖️ 理论问题与争鸣</h3>';
+    dbs.slice(0, 15).forEach(d => {{
+      h += `<div class="debate-item"><div class="deb-title">${{esc(d.title)}}</div><div class="deb-body">${{esc(d.body)}}</div></div>`;
+    }});
+    h += '</div>';
+  }}
+  // 关联实体
+  const rel = r.related || [];
+  if (rel.length) {{
+    h += '<div class="review-section"><h3>🔗 相关实体</h3><div class="rel-grid">';
+    rel.slice(0, 24).forEach(x => {{
+      h += `<div class="rel-chip" onclick="openEntity('${{esc(x.cat)}}', '${{esc(x.file)}}')">${{esc(x.name)}}<span class="rc-cat">${{esc(x.cat)}}</span></div>`;
+    }});
+    h += '</div></div>';
+  }}
+  // 来源清单
+  const srcs = r.sources || [];
+  if (srcs.length) {{
+    h += '<div class="review-section"><h3>📄 信息来源清单（' + srcs.length + ' 条）</h3>';
+    srcs.slice(0, 100).forEach(s => {{
+      h += `<div class="src-item"><span class="src-date">${{esc(s.pubdate || '')}}</span><a class="src-url" href="${{esc(s.url)}}" target="_blank" rel="noopener">${{esc(s.url)}}</a></div>`;
+    }});
+    if (srcs.length > 100) h += '<div style="color:#546e7a;font-size:12px;">…另有 ' + (srcs.length - 100) + ' 条来源，请前往 wiki 页面查看完整清单</div>';
+    h += '</div>';
+  }}
+  if (extra) h += extra;
+  return h;
+}}
+
+function openPhenomenon(i) {{
+  const p = DATA.phenomena[i];
+  if (!p) return;
+  const catLine = p.category + ' · ' + p.source_count + ' 条来源 · ' + (p.min_pd || '?') + ' ~ ' + (p.max_pd || '?');
+  let h = reviewHtml(p.name, p.category, p.review);
+  openReview(p.name, catLine, h);
+}}
+
+function openEvent(i) {{
+  const ev = DATA.events[i];
+  if (!ev) return;
+  const catLine = (ev.date || '') + ' · ' + ev.category + ' · ' + ev.source_count + ' 条来源';
+  let awardHtml = '';
+  if (ev.awards && ev.awards.length) {{
+    awardHtml = '<div class="review-section"><h3>🏆 获奖名单</h3>';
+    ev.awards.forEach(a => {{
+      awardHtml += `<div class="award-category">${{esc(a.category)}}（${{a.works.length}} 部/人）</div><table class="award-table"><tr><th>作品/作者</th><th>作者</th></tr>`;
+      a.works.forEach(w => {{
+        if (w.title) awardHtml += `<tr><td>${{esc(w.title)}}</td><td>${{esc(w.author)}}</td></tr>`;
+        else awardHtml += `<tr><td colspan="2">${{esc(w.author)}}</td></tr>`;
+      }});
+      awardHtml += '</table>';
+    }});
+    awardHtml += '</div>';
+  }}
+  openReview(ev.name, catLine, reviewHtml(ev.name, ev.category, ev.review) + awardHtml);
+}}
+
+function openEntity(cat, key) {{
+  // key 可以是序号索引，也可以是文件名
+  const list = DATA.categories[cat] || [];
+  let it = null;
+  if (typeof key === 'string') {{
+    it = list.find(x => x.file === key) || null;
+  }} else {{
+    it = list[key] || null;
+  }}
+  if (!it) return;
+  const catLine = '[' + cat + '] · ' + (it.src_count || 0) + ' 条来源' + (it.min_pd ? ' · ' + it.min_pd + ' ~ ' + it.max_pd : '');
+  const tagsHtml = (it.tags || []).map(t => '<span class="ei-tag">' + esc(t) + '</span>').join(' ');
+  let h = '<div class="review-section" style="margin-bottom:6px;">' + tagsHtml + '</div>';
+  h += '<div class="review-section"><h3>📌 简介</h3><div class="review-overview">' + esc(it.desc || '暂无简介') + '</div></div>';
+  // 时间线
+  const tl = it.timeline || [];
+  if (tl.length) {{
+    h += '<div class="review-section"><h3>🕒 关键时间线</h3>';
+    tl.slice(0, 30).forEach(t => {{
+      h += `<div class="tl-item"><div class="tl-date">${{esc(t.date)}}</div><div class="tl-text">${{esc(t.text)}}</div></div>`;
+    }});
+    h += '</div>';
+  }}
+  // 来源
+  const srcs = it.sources || [];
+  if (srcs.length) {{
+    h += '<div class="review-section"><h3>📄 信息来源清单（' + srcs.length + ' 条）</h3>';
+    srcs.forEach(s => {{
+      h += `<div class="src-item"><span class="src-date">${{esc(s.pubdate || '')}}</span><a class="src-url" href="${{esc(s.url)}}" target="_blank" rel="noopener">${{esc(s.url)}}</a></div>`;
+    }});
+    h += '</div>';
+  }}
+  // 关联
+  const rel = it.related || [];
+  if (rel.length) {{
+    h += '<div class="review-section"><h3>🔗 相关链接</h3><div class="rel-grid">';
+    rel.slice(0, 24).forEach(x => {{
+      h += `<div class="rel-chip">${{esc(x)}}</div>`;
+    }});
+    h += '</div></div>';
+  }}
+  openReview(it.name, catLine, h);
+}}
+
+// Esc 键关闭面板
+document.addEventListener('keydown', e => {{
+  if (e.key === 'Escape') {{ closeSearch(); closeReview(); }}
+}});
 
 // ── 视图切换 ──
 document.querySelectorAll('.view-btns button').forEach(btn => {{
@@ -1599,6 +2195,7 @@ window.addEventListener('resize', sizeGraphCanvas);
 
 // ── 初始渲染 ──
 render();
+renderCatNav();
 sizeGraphCanvas();
 initGraph();
 </script>
@@ -1619,6 +2216,7 @@ data_json = {
         "page_count": p["page_count"],
         "min_pd": p["min_pd"],
         "max_pd": p["max_pd"],
+        "review": p.get("review"),
     } for p in PHENOMENA],
     "events": [{
         "name": e["name"],
@@ -1629,7 +2227,9 @@ data_json = {
         "awards": e["awards"],
         "wiki": e["wiki"],
         "score": e["score"],
+        "review": e.get("review"),
     } for e in BIG_EVENTS],
+    "categories": categories,
     "graph": {
         "nodes": [{
             "id": n["id"],
