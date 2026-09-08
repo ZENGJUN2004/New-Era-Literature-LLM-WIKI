@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新时代文学驾驶舱</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #0a0e27;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+/* ── 头部 ── */
+.header {
+  background: linear-gradient(135deg, #0d1137 0%, #1a1f4e 100%);
+  padding: 20px 30px;
+  border-bottom: 2px solid #2a3075;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.header h1 {
+  font-size: 22px;
+  color: #64b5f6;
+  letter-spacing: 2px;
+}
+.header .subtitle {
+  font-size: 12px;
+  color: #7986cb;
+}
+/* ── 控制面板 ── */
+.controls {
+  background: #0d1137;
+  padding: 12px 30px;
+  border-bottom: 1px solid #1a2055;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.controls label {
+  font-size: 13px;
+  color: #90a4ae;
+}
+.controls select, .controls input {
+  background: #151a3a;
+  color: #e0e0e0;
+  border: 1px solid #2a3075;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.controls select:focus, .controls input:focus {
+  outline: none;
+  border-color: #4fc3f7;
+}
+.view-btns {
+  display: flex;
+  gap: 8px;
+}
+.view-btns button {
+  background: #1a2055;
+  color: #90a4ae;
+  border: 1px solid #2a3075;
+  padding: 5px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.view-btns button.active {
+  background: #1565c0;
+  color: #fff;
+  border-color: #1e88e5;
+}
+.view-btns button:hover {
+  background: #1e3a5f;
+}
+/* ── 主内容 ── */
+.main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+/* ── 概览卡片 ── */
+.overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+.stat-card {
+  background: linear-gradient(135deg, #111540 0%, #151a3a 100%);
+  border: 1px solid #2a3075;
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+}
+.stat-card .num {
+  font-size: 28px;
+  font-weight: bold;
+  color: #4fc3f7;
+}
+.stat-card .label {
+  font-size: 12px;
+  color: #7986cb;
+  margin-top: 5px;
+}
+/* ── 时间线图 ── */
+.timeline-chart {
+  background: #111540;
+  border: 1px solid #2a3075;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+}
+.timeline-chart h2 {
+  font-size: 16px;
+  color: #64b5f6;
+  margin-bottom: 15px;
+  border-left: 3px solid #4fc3f7;
+  padding-left: 10px;
+}
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 120px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  position: relative;
+}
+.chart-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 28px;
+  position: relative;
+}
+.chart-bar .bar {
+  width: 22px;
+  background: linear-gradient(180deg, #4fc3f7 0%, #1565c0 100%);
+  border-radius: 3px 3px 0 0;
+  transition: all 0.3s;
+  position: relative;
+}
+.chart-bar .bar:hover {
+  background: linear-gradient(180deg, #81d4fa 0%, #42a5f5 100%);
+}
+.chart-bar .bar-label {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #90a4ae;
+  white-space: nowrap;
+}
+.chart-bar .month-label {
+  font-size: 9px;
+  color: #607d8b;
+  position: absolute;
+  bottom: -18px;
+  transform: rotate(-45deg);
+  transform-origin: top right;
+  white-space: nowrap;
+}
+/* ── 分类统计 ── */
+.type-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 25px;
+}
+.type-chip {
+  background: #111540;
+  border: 1px solid #2a3075;
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+}
+.type-chip .t-num {
+  font-size: 20px;
+  font-weight: bold;
+}
+.type-chip .t-label {
+  font-size: 11px;
+  color: #7986cb;
+  margin-top: 4px;
+}
+/* ── 重要现象与问题 ── */
+.section-title {
+  font-size: 18px;
+  color: #64b5f6;
+  margin-bottom: 15px;
+  padding-left: 12px;
+  border-left: 4px solid #4fc3f7;
+}
+.phenomena-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+.phenomenon-card {
+  background: linear-gradient(135deg, #111540 0%, #151a3a 100%);
+  border: 1px solid #2a3075;
+  border-radius: 8px;
+  padding: 16px;
+  border-top: 3px solid var(--accent);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: default;
+}
+.phenomenon-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(79, 195, 247, 0.15);
+}
+.phenomenon-card .ph-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.phenomenon-card .ph-cat {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  color: var(--accent);
+}
+.phenomenon-card .ph-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+}
+.phenomenon-card .ph-desc {
+  font-size: 13px;
+  color: #b0bec5;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+.phenomenon-card .ph-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 11px;
+  color: #607d8b;
+}
+.phenomenon-card .ph-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+/* ── 大事记 ── */
+.events-section {
+  margin-bottom: 30px;
+}
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.event-card {
+  background: #111540;
+  border: 1px solid #2a3075;
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.event-card .ev-date {
+  font-size: 13px;
+  color: #4fc3f7;
+  font-family: "SF Mono", "Fira Code", monospace;
+  padding-top: 2px;
+}
+.event-card .ev-body h3 {
+  font-size: 15px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.event-card .ev-body .ev-cat {
+  font-size: 11px;
+  color: #7986cb;
+  margin-bottom: 6px;
+}
+.event-card .ev-body .ev-desc {
+  font-size: 13px;
+  color: #b0bec5;
+  line-height: 1.6;
+}
+/* ── 获奖名单表格 ── */
+.award-table {
+  margin-top: 12px;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+}
+.award-table th {
+  background: #1a2055;
+  color: #90a4ae;
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: normal;
+  border-bottom: 1px solid #2a3075;
+}
+.award-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #151a3a;
+  color: #cfd8dc;
+}
+.award-table tr:hover td {
+  background: #151a3a;
+}
+.award-category {
+  font-size: 13px;
+  color: #ffd93d;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+/* ── 关系图谱 ── */
+.graph-section {
+  margin-bottom: 30px;
+}
+.graph-container {
+  background: #111540;
+  border: 1px solid #2a3075;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+.graph-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #0d1137;
+  border-bottom: 1px solid #1a2055;
+  flex-wrap: wrap;
+}
+.graph-toolbar .cat-btn {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.06);
+  color: #90a4ae;
+}
+.graph-toolbar .cat-btn.active {
+  border-color: var(--c);
+  color: var(--c);
+  background: rgba(255,255,255,0.12);
+}
+.graph-toolbar .graph-info {
+  margin-left: auto;
+  font-size: 11px;
+  color: #607d8b;
+}
+.graph-toolbar input[type=range] {
+  width: 80px;
+  accent-color: #4fc3f7;
+}
+#graphCanvas {
+  display: block;
+  width: 100%;
+  height: 500px;
+  cursor: grab;
+}
+#graphCanvas:active { cursor: grabbing; }
+.graph-tooltip {
+  position: absolute;
+  background: #1a1f4e;
+  border: 1px solid #2a3075;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #e0e0e0;
+  pointer-events: none;
+  display: none;
+  max-width: 280px;
+  z-index: 10;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.graph-tooltip .tt-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.graph-tooltip .tt-cat {
+  font-size: 11px;
+  color: #7986cb;
+  margin-bottom: 4px;
+}
+.graph-tooltip .tt-deg {
+  font-size: 11px;
+  color: #90a4ae;
+}
+/* ── footer ── */
+.footer {
+  text-align: center;
+  padding: 20px;
+  color: #546e7a;
+  font-size: 11px;
+  border-top: 1px solid #1a2055;
+}
+/* ── 响应式 ── */
+@media (max-width: 768px) {
+  .event-card {
+    grid-template-columns: 1fr;
+  }
+  .phenomena-grid {
+    grid-template-columns: 1fr;
+  }
+  .controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>新时代文学驾驶舱</h1>
+    <div class="subtitle">中国作家网文学数据可视化 · 基于 LLM Wiki 知识库</div>
+  </div>
+  <div class="subtitle" id="clock"></div>
+</div>
+
+<div class="controls">
+  <label>显示模式：</label>
+  <div class="view-btns" id="viewBtns">
+    <button class="active" data-view="all">整体总览</button>
+    <button data-view="year">按年度</button>
+    <button data-view="custom">自定义年限</button>
+  </div>
+  <div id="yearControls" style="display:none;">
+    <label>选择年份：</label>
+    <select id="yearSelect"></select>
+  </div>
+  <div id="customControls" style="display:none;">
+    <label>起始：</label>
+    <select id="fromYear"></select>
+    <label>至</label>
+    <select id="toYear"></select>
+    <button onclick="applyCustomRange()" style="background:#1565c0;color:#fff;border:none;padding:5px 12px;border-radius:4px;cursor:pointer;font-size:13px;">确定</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="overview" id="overview"></div>
+  <div class="type-stats" id="typeStats"></div>
+  <div class="timeline-chart">
+    <h2>月度趋势</h2>
+    <div class="chart-bars" id="chartBars"></div>
+  </div>
+  <div>
+    <h2 class="section-title">重要现象与问题</h2>
+    <div class="phenomena-grid" id="phenomena"></div>
+  </div>
+  <div class="events-section">
+    <h2 class="section-title">大事记（学术信息与资料价值）</h2>
+    <div class="event-list" id="events"></div>
+  </div>
+  <div class="graph-section" id="graphSection">
+    <h2 class="section-title">关系图谱</h2>
+    <div class="graph-container">
+      <div class="graph-toolbar" id="graphToolbar"></div>
+      <canvas id="graphCanvas"></canvas>
+      <div class="graph-tooltip" id="graphTooltip"></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  新时代文学驾驶舱 · 基于新时代文学 LLM WIKI 知识库 · 共 1824 页 · 3076 篇原始文档
+</div>
+
+<script>
+const DATA = {"stats": {"total_pages": 1824, "total_raw": 3076, "by_type": {"主题": 63, "事件": 405, "人物": 610, "作品": 610, "机构": 130, "概念": 5, "流派": 1}, "by_month": {"2016-07": 3, "2018-10": 1, "2025-08": 1, "2025-12": 23, "2026-01": 343, "2026-02": 153, "2026-03": 145, "2026-04": 116, "2026-05": 161, "2026-06": 299, "2026-07": 103, "2026-08": 321, "2026-09": 59}, "by_year": {"2016": 3, "2018": 1, "2025": 24, "2026": 1700}}, "phenomena": [{"name": "大文学观", "category": "理论争鸣", "color": "#4ecdc4", "description": "李明泉提出三层结构论、张柠论AI背景下的文学转型、谢有顺论文学的三重扩容。核心命题：文学从「纯文学」向「大文学」的范式转型。", "wiki": "主题/大文学观.md", "source_count": 19, "page_count": 1, "min_pd": "2026-01", "max_pd": "2026-09"}, {"name": "新大众文艺", "category": "创作现象", "color": "#ff6b6b", "description": "皮村文学小组、清溪村新山乡巨变、西吉文学志愿服务、东莞职工文学等多点涌现。情绪共同体、底层叙事、素人写作为核心议题。", "wiki": "主题/新大众文艺.md", "source_count": 25, "page_count": 1, "min_pd": "2026-01", "max_pd": "2026-09"}, {"name": "第九届鲁迅文学奖", "category": "重要奖项", "color": "#ffd93d", "description": "2026年7月揭晓，7个门类共35部作品获奖。8月28日首次在上海颁奖，永久落户。新时代文学最高荣誉奖的标志性事件。", "wiki": "事件/第九届鲁迅文学奖.md", "source_count": 25, "page_count": 1, "min_pd": "2026-07", "max_pd": "2026-09"}, {"name": "文学读者接受", "category": "文学场域", "color": "#6c5ce7", "description": "韩松刚主持「文学读者在哪里」专题，从传统文学、网络文学、儿童文学三个维度探讨读者缺席与重塑问题。", "wiki": "主题/文学读者.md", "source_count": 1, "page_count": 1, "min_pd": "2026-08", "max_pd": "2026-08"}, {"name": "县域文学", "category": "文学场域", "color": "#00b894", "description": "练韬提出「县域文学」概念：县域是都市的起点与乡村的尽头，日常生活诗性伦理。新时代城市文学的新空间。", "wiki": "主题/县域文学.md", "source_count": 3, "page_count": 1, "min_pd": "2026-01", "max_pd": "2026-01"}, {"name": "AI与文学", "category": "理论争鸣", "color": "#e17055", "description": "人工智能对文学创作、批评、传播的全方位冲击。涉及AI写作版权、人机协作、文学主体性等前沿议题。", "wiki": "主题/AI与文学.md", "source_count": 1, "page_count": 1, "min_pd": "2026-03", "max_pd": "2026-03"}, {"name": "素人写作", "category": "创作现象", "color": "#fdcb6e", "description": "非职业作家的文学创作现象，范雨素、王计兵（外卖诗人）等为代表。打破专业/业余界限，重新定义「文学」的边界。", "wiki": "", "source_count": 15, "page_count": 6, "min_pd": "2026-05", "max_pd": "2026-09"}, {"name": "网络文学", "category": "文学场域", "color": "#a29bfe", "description": "网络文学经典化、茅盾新人奖·网络文学奖、IP改编等持续成为年度热点。", "wiki": "", "source_count": 96, "page_count": 39, "min_pd": "2026-01", "max_pd": "2026-09"}, {"name": "现实主义", "category": "理论争鸣", "color": "#55a3f5", "description": "赵炎秋论中国现实主义文学的真实性问题，从生活真实、主观观念、表现方式、形象世界四个维度展开。", "wiki": "主题/现实主义.md", "source_count": 1, "page_count": 1, "min_pd": "2026-06", "max_pd": "2026-06"}, {"name": "乡村振兴与文学书写", "category": "创作现象", "color": "#2ecc71", "description": "清溪村「新山乡巨变」专题创作、乡土文学转型、脱贫攻坚叙事等持续涌现。", "wiki": "", "source_count": 46, "page_count": 18, "min_pd": "2026-01", "max_pd": "2026-09"}, {"name": "生态文学", "category": "创作现象", "color": "#1abc9c", "description": "生态主题创作持续活跃，自然书写与生态文明理念深度融合。", "wiki": "", "source_count": 33, "page_count": 19, "min_pd": "2026-01", "max_pd": "2026-08"}, {"name": "科幻文学", "category": "创作现象", "color": "#9b59b6", "description": "冷湖科幻文学奖、鲲鹏青少年科幻文学奖、贺财霖科幻文学奖持续推动科幻创作繁荣。", "wiki": "", "source_count": 34, "page_count": 18, "min_pd": "2026-01", "max_pd": "2026-08"}, {"name": "非虚构写作", "category": "创作现象", "color": "#e67e22", "description": "非虚构写作热潮延续，报告文学与非虚构文学的边界、方法论持续讨论。", "wiki": "", "source_count": 64, "page_count": 56, "min_pd": "2016-07", "max_pd": "2026-08"}, {"name": "历史虚无主义", "category": "舆情现象", "color": "#c0392b", "description": "⚠️ 数据待补充 — 当前 Wiki 中暂未收录与「历史虚无主义」直接相关的文艺思潮讨论。", "wiki": "", "source_count": 0, "page_count": 0, "min_pd": "", "max_pd": ""}, {"name": "极端女权主义", "category": "舆情现象", "color": "#c0392b", "description": "⚠️ 数据待补充 — 当前 Wiki 中暂未收录与「极端女权主义」相关的文艺舆情内容。", "wiki": "", "source_count": 0, "page_count": 0, "min_pd": "", "max_pd": ""}, {"name": "鉴抄事件", "category": "舆情现象", "color": "#c0392b", "description": "⚠️ 数据待补充 — 当前 Wiki 中暂未收录与「鉴抄事件」相关的文学舆情内容。", "wiki": "", "source_count": 0, "page_count": 0, "min_pd": "", "max_pd": ""}], "events": [{"name": "汉文化网络文学专题创作扶持计划评选结果公告", "date": "2026-09-03", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/汉文化网络文学专题创作扶持计划评选结果公告.md", "score": 26}, {"name": "第六届粤港澳大湾区文学周", "date": "2026-09-01", "category": "文学事件", "source_count": 6, "description": "第六届粤港澳大湾区文学周于 2026-09-01 在广州启动，由广东省作协主办，历时 8 天，涵盖专业论坛、文学对谈、主题沙龙、基层采风、公益讲座等多元形式。9 月 1 日粤港澳大湾区文学高质量发展论坛聚焦「大文学观：边界与无限」；9 月 2 日「2026 广东文学发布」在广东文学馆集中发布 17 项重点文学项目、同日举行「新大众文艺·广东进行时」交流座谈；9 月 3 日「粤派批评·时代回响」文学沙龙同馆举行。文学周呈现广东在鲁奖突破、大众文学平台、区域协作与国际传播等方面的整体布局。", "awards": [], "wiki": "事件/第六届粤港澳大湾区文学周.md", "score": 45}, {"name": "大文学观访谈林森", "date": "2026-09-01", "category": "文学事件", "source_count": 1, "description": "2026年9月1日，张茹专访《天涯》杂志主编林森，探讨\"大文学观\"的内涵、《天涯》的精神底色，以及面对AI写作泛滥时文学编辑的坚守。", "awards": [], "wiki": "事件/大文学观访谈林森.md", "score": 31}, {"name": "鲁迅文学周", "date": "2026-08-26", "category": "文学事件", "source_count": 1, "description": "2026 中国文学盛典·鲁迅文学奖之夜期间，「鲁迅文学周」于 2026-08-25 至 09-01 在上海举行，由中国作协、上海市委宣传部指导，中国作协社联部、上海市作协、虹口区委宣传部、鲁迅文化基金会联合主办。活动集合巨鹿之赞中国文学名家之夜、海上文学下午茶、作家走虹口、人民的诗意外滩诗歌之夜等多元形式，让文学走出书斋、走入城市街巷。", "awards": [], "wiki": "事件/鲁迅文学周.md", "score": 31}, {"name": "鲁迅文学周上海篇", "date": "2026-08-25", "category": "文学事件", "source_count": 11, "description": "2026 年 8 月 25 日，\"2026 中国文学盛典·鲁迅文学周\"在上海鲁迅公园启幕，作为 8 月 28 日鲁迅文学奖之夜的前奏系列活动，涵盖文创市集、城市文学装置、巡展、研讨、对谈等多种形式。时值鲁迅诞辰 145 周年、逝世 90 周年，上海作协主席孙甘露将系列活动概括为\"全城鲁迅\"。", "awards": [], "wiki": "事件/鲁迅文学周上海篇.md", "score": 57}, {"name": "中国文学新力量系列活动", "date": "2026-08-23", "category": "学术活动", "source_count": 1, "description": "「中国文学新力量」系列活动是第二十一届中国长春电影节（2026-08-23 开幕）的重点活动之一，2026-08-24 在长春举行，聚焦文学 IP 影视转化与青年创作人才培养。", "awards": [], "wiki": "事件/中国文学新力量系列活动.md", "score": 25}, {"name": "首届梧州市岭南文学奖", "date": "2026-08-20", "category": "地市级奖项", "source_count": 1, "description": "粤桂琼10部（篇）作品获奖，区域文学协作新模式。", "awards": [], "wiki": "事件/首届梧州市岭南文学奖.md", "score": 100}, {"name": "内蒙古文学重点作品创作工程", "date": "2026-08-15", "category": "学术活动", "source_count": 2, "description": "\"内蒙古文学重点作品创作工程\"是内蒙古引导文学创作方向、发掘培养优秀文学人才、培育推出文学精品的重点扶持工程。2026年8月15日，2023年度工程新书发布会在内蒙古文学馆举行，集中发布六部优秀作品。", "awards": [], "wiki": "事件/内蒙古文学重点作品创作工程.md", "score": 34}, {"name": "2026上海书展", "date": "2026-08-12", "category": "文学事件", "source_count": 6, "description": "2026 上海书展暨「书香中国」上海周于 2026 年 8 月 12 日在上海开幕。本届书展除新书发布外，出版文创持续「出圈」，阅文集团等以「IP+AI+生态」亮相并首发三部科技题材网络文学新书。", "awards": [], "wiki": "事件/2026上海书展.md", "score": 42}, {"name": "2022中国文学盛典鲁迅文学奖之夜", "date": "2026-08-11", "category": "学术活动", "source_count": 1, "description": "2026年8月11日，2022中国文学盛典·鲁迅文学奖之夜视频发布。", "awards": [], "wiki": "事件/2022中国文学盛典鲁迅文学奖之夜.md", "score": 27}, {"name": "2023中国文学盛典茅盾文学奖之夜", "date": "2026-08-11", "category": "学术活动", "source_count": 1, "description": "2026年8月11日，2023中国文学盛典·茅盾文学奖之夜视频发布。", "awards": [], "wiki": "事件/2023中国文学盛典茅盾文学奖之夜.md", "score": 27}, {"name": "全勇先鲁迅文学奖作品《秘密》创作分享暨中青年作家座谈会举行", "date": "2026-08-10", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/全勇先鲁迅文学奖作品《秘密》创作分享暨中青年作家座谈会举行.md", "score": 26}, {"name": "第八届辽宁省辽宁文学奖", "date": "2026-08-08", "category": "省级奖项", "source_count": 2, "description": "辽宁文学奖三奖项颁奖典礼在沈阳举行。含文学评论奖、文学翻译奖、文学理论批评奖。", "awards": [], "wiki": "事件/第十一届辽宁文学奖.md", "score": 100}, {"name": "第二届寿春杯·《小说选刊》年度大奖", "date": "2026-08-04", "category": "专业奖项", "source_count": 1, "description": "在安徽寿县颁奖，小说选刊年度评选。", "awards": [], "wiki": "事件/寿春杯小说选刊年度大奖.md", "score": 100}, {"name": "《我们笨拙地爱着这个世界——新大众文艺访谈录》新书发布", "date": "2026-07-27", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/《我们笨拙地爱着这个世界——新大众文艺访谈录》新书发布.md", "score": 36}, {"name": "第九届鲁迅文学奖", "date": "2026-07-15", "category": "国家级奖项", "source_count": 26, "description": "中国作协主办，2026年7月15日揭晓，8月28日首次在上海颁奖并永久落户。7个门类共35部作品获奖，覆盖面为历届之最。", "awards": [{"category": "中篇小说奖", "works": [{"title": "秘密", "author": "全勇先"}, {"title": "父亲和雕像", "author": "肖克凡"}, {"title": "阳关三叠", "author": "林那北"}, {"title": "屋檐", "author": "罗伟章"}, {"title": "猛犸象", "author": "胡性能"}]}, {"category": "短篇小说奖", "works": [{"title": "漫长的季节", "author": "班宇"}, {"title": "彼此", "author": "哲贵"}, {"title": "她和她的麦子", "author": "何玉茹"}, {"title": "不知", "author": "储福金"}, {"title": "序曲", "author": "艾玛"}]}, {"category": "报告文学奖", "works": [{"title": "穿越人间的象群", "author": "陈启文"}, {"title": "遵义三日", "author": "胡松涛"}, {"title": "要有光", "author": "梁鸿"}, {"title": "西海固笔记", "author": "季栋梁"}, {"title": "绽放", "author": "丁捷"}]}, {"category": "诗歌奖", "works": [{"title": "又见群山如黛", "author": "梁小斌"}, {"title": "入海的长笛", "author": "叶玉琳"}, {"title": "低处飞行", "author": "王计兵"}, {"title": "大地为万物彻夜生长", "author": "江非"}, {"title": "我愿埋首人间", "author": "张二棍"}]}, {"category": "散文杂文奖", "works": [{"title": "古灵魂", "author": "张锐锋"}, {"title": "生活在临终医院", "author": "薛舒"}, {"title": "人间珍贵", "author": "傅菲"}, {"title": "天生草原", "author": "艾平"}, {"title": "有所思", "author": "彭程"}]}, {"category": "理论评论奖", "works": [{"title": "文学的深意", "author": "谢有顺"}, {"title": "劳者歌其事", "author": "卓今"}, {"title": "文学的风景与思想的风致", "author": "贺仲明"}, {"title": "总体性与社会主义文学传统", "author": "杨辉"}, {"title": "“新红色经典”论", "author": "傅逸尘"}]}, {"category": "文学翻译奖", "works": [{"title": "约翰生传", "author": "蒲隆 译"}, {"title": "芬尼根的守灵夜", "author": "戴从容 译"}, {"title": "人类的末日", "author": "张芸 译"}, {"title": "拉夫尔", "author": "刘洪波 译"}, {"title": "战争，战争，战争", "author": "袁筱一 译"}]}], "wiki": "事件/第九届鲁迅文学奖.md", "score": 100}, {"name": "鲁迅文学奖永久落户上海", "date": "2026-07-15", "category": "文学事件", "source_count": 2, "description": "2026年8月28日，第九届鲁迅文学奖颁奖典礼在上海举行，中国作家协会宣布该奖项颁奖典礼将永久落户上海，标志着这一国家级文学奖项首次走出北京。", "awards": [], "wiki": "事件/鲁迅文学奖永久落户上海.md", "score": 39}, {"name": "第十五届唐弢青年文学研究奖", "date": "2026-07-11", "category": "学术奖项", "source_count": 1, "description": "中国现代文学馆主办，在沪颁奖，表彰青年文学研究成果。", "awards": [], "wiki": "事件/第十五届唐弢青年文学研究奖.md", "score": 100}, {"name": "《中国当代文学研究》“文学现象研究”栏目入选中宣部第二批哲学社会科学期刊重点专栏建设名单", "date": "2026-07-02", "category": "文学事件", "source_count": 1, "description": "", "awards": [], "wiki": "事件/《中国当代文学研究》“文学现象研究”栏目入选中宣部第二批哲学社会科学期刊重点专栏建设名单.md", "score": 28}, {"name": "新时代文学研究海外译介会", "date": "2026-06-18", "category": "学术活动", "source_count": 1, "description": "2026-06-18，由中国作家协会新时代文学研究中心与安徽文艺出版社联合主办的中国新时代文学研究海外译介会在北京国家会议中心BIBF安徽展台举行。郝敬波著《中国新时代文学理论话语建构研究》签约韩文版输出。", "awards": [], "wiki": "事件/新时代文学研究海外译介会.md", "score": 41}, {"name": "第六届茅盾新人奖", "date": "2026-06-16", "category": "国家级奖项", "source_count": 1, "description": "2026年适逢茅盾诞辰130周年，在其故乡桐乡颁发。含传统文学奖10人、网络文学奖10人、提名奖各10人。", "awards": [{"category": "茅盾新人奖", "works": [{"title": "", "author": "李俊（宝树）"}, {"title": "", "author": "朱婧"}, {"title": "", "author": "陈培浩"}, {"title": "", "author": "邹胜念"}, {"title": "", "author": "黄平"}, {"title": "", "author": "于博（秦北）"}, {"title": "", "author": "王洁（沫沫）"}, {"title": "", "author": "周明全"}, {"title": "", "author": "赵勤（七堇年）"}, {"title": "", "author": "徐刚"}]}, {"category": "网络文学奖", "works": [{"title": "", "author": "丁莹（丁墨）"}, {"title": "", "author": "王怀誉（三九音域）"}, {"title": "", "author": "李虎（天蚕土豆）"}, {"title": "", "author": "张栩（匪迦）"}, {"title": "", "author": "杜珏璞（杀虫队队员）"}, {"title": "", "author": "胡炜（狐尾的笔）"}, {"title": "", "author": "陈思玄（玄色）"}, {"title": "", "author": "杨郑（青鸾峰上）"}, {"title": "", "author": "班亮（知白）"}, {"title": "", "author": "徐文艳（飘荡墨尔本）"}]}, {"category": "提名奖", "works": [{"title": "", "author": "马慧娟"}, {"title": "", "author": "肖睿"}, {"title": "", "author": "罗旭（吟光）"}, {"title": "", "author": "钱幸"}, {"title": "", "author": "蒋在"}, {"title": "", "author": "王忆"}, {"title": "", "author": "陈思"}, {"title": "", "author": "杨则纬"}, {"title": "", "author": "梁书正"}, {"title": "", "author": "潘菊艳（段若兮）"}]}], "wiki": "事件/第六届茅盾新人奖颁奖典礼.md", "score": 100}, {"name": "中国作协新时代文学研究中心（广西师范大学、广西民族大学）成立", "date": "2026-06-14", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/中国作协新时代文学研究中心（广西师范大学、广西民族大学）成立.md", "score": 36}, {"name": "中国式现代化与文学的力量座谈会", "date": "2026-06-05", "category": "学术活动", "source_count": 1, "description": "2026-06-05 由《中国作家》杂志社在京举办的学术座谈会，围绕中国式现代化进程中文学的历史使命、实践路径与发展方向研讨，由《中国作家》主编李云雷主持。与会者包括阎晶明、李陀、孟繁华、韩春燕、何吉贤、萨支山、李松睿及郑小琼、王杨、李静、樊迎春、刘诗宇、王秋实、许莹、王雨萌等（观点均归发言者）。", "awards": [], "wiki": "事件/中国式现代化与文学的力量座谈会.md", "score": 28}, {"name": "第七届蒋风儿童文学奖（理论贡献奖）获奖学者李利芳教授学术座谈会举行", "date": "2026-06-03", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/第七届蒋风儿童文学奖（理论贡献奖）获奖学者李利芳教授学术座谈会举行.md", "score": 26}, {"name": "第七届谢璞儿童文学奖启动 纪念谢璞《一滴茅台》发表40周年座谈会举行", "date": "2026-05-25", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/第七届谢璞儿童文学奖启动 纪念谢璞《一滴茅台》发表40周年座谈会举行.md", "score": 26}, {"name": "纪念柳青诞辰110周年——“柳青文学奖”获奖作家谈柳青座谈会在西安举行", "date": "2026-05-25", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/纪念柳青诞辰110周年——“柳青文学奖”获奖作家谈柳青座谈会在西安举行.md", "score": 26}, {"name": "《中国作家》举办“新时代文学与文化强国”", "date": "2026-05-07", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/《中国作家》举办“新时代文学与文化强国”.md", "score": 36}, {"name": "《中国作家》举办“新时代文学与文化强国”座谈会", "date": "2026-05-07", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/《中国作家》举办“新时代文学与文化强国”座谈会.md", "score": 36}, {"name": "宁夏“新时代文学新书发布暨阅读分享会”举办", "date": "2026-05-06", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/宁夏“新时代文学新书发布暨阅读分享会”举办.md", "score": 36}, {"name": "《中国新时代文学蓝皮书（2025）》新书发布会在京举行", "date": "2026-04-27", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/《中国新时代文学蓝皮书（2025）》新书发布会在京举行.md", "score": 36}, {"name": "人民文学出版社成立75周年“亮家底” 用经典书写中国当代文学史", "date": "2026-03-31", "category": "文学事件", "source_count": 1, "description": "", "awards": [], "wiki": "事件/人民文学出版社成立75周年“亮家底” 用经典书写中国当代文学史.md", "score": 28}, {"name": "2025收获文学榜揭晓，透露文学创作新趋势", "date": "2026-02-04", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/2025收获文学榜揭晓，透露文学创作新趋势.md", "score": 26}, {"name": "《中国作家》举办“新大众文艺与大文学观”座谈会", "date": "2026-02-03", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/《中国作家》举办“新大众文艺与大文学观”座谈会.md", "score": 36}, {"name": "中国作家协会“新时代山乡巨变创作计划”“新时代文学攀登计划”公告", "date": "2026-02-02", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/中国作家协会“新时代山乡巨变创作计划”“新时代文学攀登计划”公告.md", "score": 36}, {"name": "桫椤网络文学批评研讨活动", "date": "2026-01-31", "category": "学术活动", "source_count": 1, "description": "「在场与深耕——桫椤网络文学批评研讨活动」于 2026 年 1 月 31 日下午在北京举行，由河北省作家协会与花山文艺出版社共同主办，聚焦网络文学评论家桫椤的批评实践与网络文学评价体系建构。", "awards": [], "wiki": "事件/桫椤网络文学批评研讨活动.md", "score": 45}, {"name": "新时代文学期刊转型与发展研讨会", "date": "2026-01-30", "category": "学术活动", "source_count": 1, "description": "新时代文学期刊转型与发展研讨会于2026年1月30日以线上线下相结合的方式举办，由中国作家出版集团、湖南省作家协会、中南大学人文学院联合主办，中国作家协会新时代文学研究中心（中南大学）与《湖南文学》杂志社承办，聚焦数字媒介生态变革下传统文学期刊的系统性转型与协同发展。", "awards": [], "wiki": "事件/新时代文学期刊转型与发展研讨会.md", "score": 52}, {"name": "作家出版社2025年度好书专家评选会", "date": "2026-01-27", "category": "文学事件", "source_count": 1, "description": "2026年1月27日，作家出版社2025年度好书专家评选会在京举行。由文学、影视界十余位评委评出「作家出版社2025年度好书」20部、「最具影视改编价值图书」10部、「年度致敬图书」4部。", "awards": [], "wiki": "事件/作家出版社2025年度好书.md", "score": 27}, {"name": "百花迎春——中国文学艺术界2026春节大联欢", "date": "2026-01-27", "category": "学术活动", "source_count": 1, "description": "2026年1月27日，「百花迎春——中国文学艺术界2026春节大联欢」在北京举行，以「万马奔腾 百花迎春」为主题，老中青艺术家汇聚一堂、各艺术门类精品力作联袂上演。「百花迎春」是中国文联的重要品牌活动。", "awards": [], "wiki": "事件/百花迎春2026.md", "score": 26}, {"name": "「知名作家看法院」创作采风活动", "date": "2026-01-27", "category": "学术活动", "source_count": 1, "description": "2026年1月27日起，由人民法院新闻传媒总社与《中国作家》杂志社联合举办的「法徽闪耀，笔墨生香——知名作家看法院」创作采风活动在安徽合肥拉开帷幕，为期五天，作家们深入中基层法院审判一线，观察法官工作生活。", "awards": [], "wiki": "事件/知名作家看法院采风.md", "score": 26}, {"name": "《中国作家》新大众文艺与大文学观座谈会", "date": "2026-01-26", "category": "学术活动", "source_count": 1, "description": "2026年1月26日，《中国作家》杂志社在京召开\"新大众文艺与大文学观\"座谈会。中国作协党组成员、副主席、书记处书记吴义勤，中国当代文学研究会名誉会长白烨，北京大学中文系党委书记、教授贺桂梅，以及刘涛、阎安、罗岗、白草、杨辉、王杨、何同彬、行超、汤俏、钟媛、刘江伟等专家学者、媒体代表共同参加座谈。会议由《中国作家》主编李云雷主持，副主编梁飞、俞胜，文学编辑部副主任赵依，编辑陈集益、陆源以及办公室职员侯博等出席。", "awards": [], "wiki": "事件/《中国作家》新大众文艺与大文学观座谈会.md", "score": 51}, {"name": "中埃青年作家的新时代书写主题座谈会", "date": "2026-01-24", "category": "学术活动", "source_count": 2, "description": "当地时间2026年1月24日，由北京师范大学、中国图书进出口（集团）有限公司携手埃及开罗中国文化中心联合主办的「中埃青年作家的新时代书写」主题座谈会在开罗中国文化中心举行。中国青年作家麦苏、周宏翔、鲁般与埃及作家曼苏拉·埃兹丁等嘉宾围绕「中阿文学中的女性书写」与「中阿文学中的科幻想象」两大主题展开深度对话。", "awards": [], "wiki": "事件/中埃青年作家新时代书写座谈会.md", "score": 31}, {"name": "「她走过无数人间：萧红与中国当代文学」活动", "date": "2026-01-21", "category": "文学事件", "source_count": 1, "description": "近日（2026-01-21 报道），由北京十月文艺出版社主办的「她走过无数人间：萧红与中国当代文学」活动在北京举办。文学评论家张莉随笔集《她走过无数人间：萧红和她的文学世界》对萧红重要作品进行深入文本解读。", "awards": [], "wiki": "事件/萧红与中国当代文学活动.md", "score": 33}, {"name": "西游记中的情理法新书发布会暨法律与文学研讨会", "date": "2026-01-17", "category": "学术活动", "source_count": 1, "description": "2026年1月17日下午，《〈西游记〉中的情理法》新书发布会暨「法律与文学」研讨会在长沙法律书店举办。该书由湖南大学法学院教授蒋海松所著，围绕《西游记》主要人物、重要故事展开研究，挖掘其中蕴含的法律观念与人性寓意，重点探析文学作品背后的社会思潮，倡导理想社会治理应注重情理法的均衡发展。", "awards": [], "wiki": "事件/西游记中的情理法研讨会.md", "score": 28}, {"name": "鲁迅文学院湖南儿童文学创作高级研修班", "date": "2026-01-15", "category": "学术活动", "source_count": 2, "description": "2026-01-15 开学、2026-01-22 结业，鲁迅文学院湖南儿童文学创作高级研修班在京举行，为期十天，52 名学员参与。", "awards": [], "wiki": "事件/鲁院湖南儿童文学高研班.md", "score": 37}, {"name": "丝路之魂——中拉文学翻译与跨文化对话座谈会", "date": "2026-01-14", "category": "学术活动", "source_count": 1, "description": "2026-01-14，「丝路之魂——中拉文学翻译与跨文化对话」座谈会在西安举办。由中国作协主办，外联部、陕西省作协、北京语言大学世界汉学中心、西安外国语大学承办。", "awards": [], "wiki": "事件/中拉文学翻译座谈会.md", "score": 25}, {"name": "新时代全国文学名家座谈会", "date": "2026-01-13", "category": "学术活动", "source_count": 1, "description": "2026-01-13 下午，由中华文学基金会、中共成都市金牛区委宣传部联合主办的新时代全国文学名家座谈会在成都市金牛区图书馆举行。十余位作家、诗人、文学评论家围绕「新时代我们究竟需要怎样的文学」展开探讨，核心议题是 AI/机器人写作对「文学是人学」观念的冲击及「大文学观」的提出。", "awards": [], "wiki": "事件/新时代全国文学名家座谈会.md", "score": 28}, {"name": "2022-2024年度赵树理文学奖", "date": "2026-01-12", "category": "省级奖项", "source_count": 1, "description": "山西省最高荣誉文学奖项，每三年评选一次。12类奖项，共19部（篇）作品及5位个人获奖。", "awards": [{"category": "长篇小说奖", "works": [{"title": "西口西口", "author": "李爱民"}, {"title": "沐月记", "author": "李迎兵"}]}, {"category": "中篇小说奖", "works": [{"title": "千年杨家百年河", "author": "岳占东"}, {"title": "十三根烟囱", "author": "张发"}]}, {"category": "短篇小说奖", "works": [{"title": "我拿什么拯救你", "author": "石国平"}, {"title": "浮生", "author": "迟迟（韩莉）"}]}, {"category": "诗歌奖", "works": [{"title": "时间的暗伤", "author": "赵建雄"}, {"title": "时间黄金", "author": "杨丕梁"}]}, {"category": "散文奖", "works": [{"title": "归家之思", "author": "柏川（王百灵）"}, {"title": "故乡有此", "author": "乔傲龙"}]}, {"category": "报告文学奖", "works": [{"title": "蒲剧文物记忆", "author": "姚阿林"}, {"title": "绛州澄泥砚", "author": "李云峰"}, {"title": "东方贞德——华侨民族女英雄李林传", "author": "王宝国"}]}, {"category": "文学评论奖", "works": [{"title": "试论王朝闻文学理论中的“别车杜”影响", "author": "梁贝"}, {"title": "红色经典的时代之问", "author": "刘照华"}]}, {"category": "儿童文学奖", "works": [{"title": "故宫奇遇记1：寻找神奇咒语", "author": "梁芳（梁芳芳）"}, {"title": "好忙好忙的巨人", "author": "张旭燕"}]}, {"category": "网络文学奖", "works": [{"title": "开局账号被盗，反手充值一百万", "author": "酒剑仙人（张波）"}, {"title": "祂们都叫我大师", "author": "梁超"}]}], "wiki": "事件/赵树理文学奖2022-2024.md", "score": 100}, {"name": "2025年文学理论评论高频词发布", "date": "2026-01-09", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/2025年文学理论评论高频词发布.md", "score": 36}, {"name": "2025年文学理论评论高频词", "date": "2026-01-09", "category": "文学事件", "source_count": 1, "description": "2025年文学理论评论高频词由《文艺报》联合北京师范大学文学院评选发布，兼顾流行性与学理性，经过文学期刊扫描、关键词抓取与评论家推荐。", "awards": [], "wiki": "事件/2025文学理论评论高频词.md", "score": 31}, {"name": "中国当代文学研究会年度榜单（2025）发布", "date": "2026-01-04", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/中国当代文学研究会年度榜单（2025）发布.md", "score": 41}, {"name": "中国当代文学研究会年度榜单（2025）", "date": "2026-01-04", "category": "文学事件", "source_count": 2, "description": "中国当代文学研究会承续2023年来的文学榜单推选活动，推出「中国当代文学研究会年度榜单（2025）」，从学术与批评角度体现对当代文学场域状况、成就与特色的关注。", "awards": [], "wiki": "事件/中国当代文学研究会年榜2025.md", "score": 40}, {"name": "第三届《中国校园文学》年度奖", "date": "2025-12-28", "category": "文学事件", "source_count": 1, "description": "2025-12-28，第三届（2025年）《中国校园文学》年度奖颁奖典礼在东莞桥头镇举行。25人分获小说奖、散文奖、诗歌奖、童话奖、科幻奖、新锐小作家奖、佳作奖。", "awards": [], "wiki": "事件/第三届校园文学年度奖.md", "score": 27}, {"name": "人民文学2026新刊年度发布系列直播首场谍战篇", "date": "2025-12-28", "category": "学术活动", "source_count": 1, "description": "2025-12-28晚7点，《人民文学》主编徐则臣、作家龙一、全勇先做客「赵健的读书日记」视频号/抖音号直播间，开展2026新刊年度发布系列直播首场「谍战篇」活动。", "awards": [], "wiki": "事件/人民文学2026新刊谍战篇直播.md", "score": 25}, {"name": "《断裂与延续：中国工业遗产寻访记》研讨会", "date": "2025-12", "category": "学术活动", "source_count": 1, "description": "2026-01-17 上午，长篇报告文学《断裂与延续：中国工业遗产寻访记》研讨会在京举行。该书由湖南青年作家杨丰美创作，系统梳理中国工业文明脉络，深入探讨工业遗产价值。", "awards": [], "wiki": "事件/工业遗产寻访记研讨会.md", "score": 30}, {"name": "全勇先抗战题材作品研讨会", "date": "2025-12", "category": "学术活动", "source_count": 1, "description": "2026-01-20 上午，中国作协副主席、黑龙江省作协主席迟子建在黑龙江文学馆主持召开全勇先抗战题材作品研讨会，正式拉开第三届「黑龙江冰雪文学周」序幕。", "awards": [], "wiki": "事件/全勇先抗战题材作品研讨会.md", "score": 29}, {"name": "著名作家抵达文学县场", "date": "2025-09", "category": "文学事件", "source_count": 3, "description": "中国作协自 2025-09 起持续开展的文学惠民系列活动：组织文学名家走进县域，回应基层作家与读者期盼，挖掘培养基层写作力量，打造「新时代文学扎根人民的亮丽名片」。首站博山活动（2026-05-28~31）由何向阳、毕飞宇、徐则臣参与（观点、事实均出自中国作家网报道）。", "awards": [], "wiki": "事件/著名作家抵达文学县场.md", "score": 30}, {"name": "中国作家协会新时代文学攀登计划各期支持项目名单", "date": "2025-08-22", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/中国作家协会新时代文学攀登计划各期支持项目名单.md", "score": 36}, {"name": "2025中国暨江苏报告文学优秀榜单", "date": "2025-07", "category": "文学事件", "source_count": 3, "description": "2026年1月26日，「报告文学 时代绽放」主题活动在宿迁举行，现场发布「2025年度中国报告文学优秀作品推荐榜单」与「2025年度江苏报告文学优秀作品推荐榜单」。两项榜单各入选12部优秀作品，涵盖城市建设、家国情怀、科技发展、生态保护等题材。活动由中国报告文学学会、江苏省作家协会联合主办。", "awards": [], "wiki": "事件/2025中国报告文学优秀榜单.md", "score": 36}, {"name": "董小潭长篇小说《天滋》研讨会", "date": "2025-04", "category": "学术活动", "source_count": 1, "description": "2026-01-10，由江苏省作协和泰州市文联主办的董小潭长篇小说《天滋》作品研讨会在南京举行。", "awards": [], "wiki": "事件/董小潭天滋研讨会.md", "score": 28}, {"name": "中国作家驻村计划", "date": "2025", "category": "文学事件", "source_count": 2, "description": "\"中国作家驻村计划\"组织作家走进村庄长期驻村，与村民同吃同住同行，而非走马观花式采风。第二期于2026年6月（芒种时节）组织23位作家进驻巴蜀大地20多个村庄，进行为期10天以上的驻村活动。2026-08-17中国作家网刊发教鹤然的阶段性观察，提出作家驻村从来不是单方面的\"文艺赋能乡村\"，而是文学与乡村的双向滋养。", "awards": [], "wiki": "事件/中国作家驻村计划.md", "score": 28}, {"name": "上海文学馆开幕", "date": "2023-09-18", "category": "文学事件", "source_count": 7, "description": "上海文学馆坐落于虹口区江西北路与武进路路口，由一座新建主馆与三栋优秀历史建筑组成，建筑面积 1.2 万多平方米，含文学馆主馆、巴金图书馆和读者服务中心三部分。建设历程自 2012 年首次提案至 2026 年落成，历时十四年。2026-08-27 面向公众开放（免费、无需预约），2026-08-29 正式开幕，首期活动为艾伟《春歌》新书分享会。", "awards": [], "wiki": "事件/上海文学馆开幕.md", "score": 49}, {"name": "中国作家协会新时代文学攀登计划联席会议成员单位", "date": "2023-04-21", "category": "学术活动", "source_count": 1, "description": "", "awards": [], "wiki": "事件/中国作家协会新时代文学攀登计划联席会议成员单位.md", "score": 36}, {"name": "文学报年度好书榜", "date": "2022", "category": "文学事件", "source_count": 1, "description": "《文学报》主办的年度好书评选。文学报有 45 年报龄，为中国目前唯一的文学报（据刘亮程感言）。2025 年度好书榜评选主题为「文学未来亦是此时此刻」；2026-06-06 中国作家网「理论评论#创作谈」以《每一个当下的文学行动都会让未来有迹可循》为题刊发获奖者感言辑录（整理者未署名）。", "awards": [], "wiki": "事件/文学报年度好书榜.md", "score": 30}, {"name": "扬子江文学评论2025年度文学排行榜", "date": "2017", "category": "文学事件", "source_count": 1, "description": "「《扬子江文学评论》年度文学排行榜」创办于2017年，是国内首个由文学评论刊物推出的排行榜，旨在通过评论家的共识视野发现大时代里具有大格局、大气象的作品。2025年度排行榜于2026年1月30日终评发布，覆盖长篇小说、中篇小说、短篇小说、诗歌、散文·非虚构五大门类。", "awards": [], "wiki": "事件/扬子江文学评论2025年度文学排行榜.md", "score": 29}, {"name": "中国作协第二次理事会议", "date": "1956-04-28", "category": "文学事件", "source_count": 1, "description": "中国作家协会第二次理事会议（扩大）于 1956 年 2 月 27 日至 3 月 6 日在北京召开，时值「社会主义革命高潮」到来之际，如何建设「社会主义文学」成为会议主题。会议被普遍视为建构社会主义文学的标志性「事件」与 1950 年代关于当代文学制度最完整的一次设计。", "awards": [], "wiki": "事件/中国作协第二次理事会议.md", "score": 29}, {"name": "人民文学人民阅卷活动", "date": "1949-10-25", "category": "文学事件", "source_count": 1, "description": "《人民文学》杂志社自2022年在封二开设「人民阅卷」专栏（2025年调整为「内文页」），逐渐形成创、编、读、评、推一体的人民阅卷模式，与各地读者建立广泛联系。「人民阅卷」已成为一个闪亮的文学品牌。2026年1月24日，「新大众文艺面对面·《人民文学》对话《星火》暨「人民阅卷」活动在江西赣州举行，系《人民文学》2026年首场「人民阅卷」活动。", "awards": [], "wiki": "事件/人民文学人民阅卷活动.md", "score": 26}, {"name": "圉庐·作家书法馆揭牌暨田中禾书法捐赠仪式", "date": "1941", "category": "文学事件", "source_count": 1, "description": "2026-01-17 上午，圉庐·作家书法馆揭牌暨作家田中禾书法捐赠仪式在大观杂志社举行。河南省文学院院长、诗人张晓雪捐赠 10 幅田中禾先生书法珍品，为新建馆奠定高起点馆藏基础。", "awards": [], "wiki": "事件/圉庐作家书法馆揭牌.md", "score": 27}], "graph": {"nodes": [{"id": "主题/AI文学叙事革命.md", "name": "AI文学叙事革命", "cat": "主题", "src_count": 1, "degree": 3, "color": "#6c5ce7"}, {"id": "概念/人工智能人文学.md", "name": "人工智能人文学", "cat": "概念", "src_count": 1, "degree": 7, "color": "#e17055"}, {"id": "主题/中国文学译介.md", "name": "中国文学译介", "cat": "主题", "src_count": 2, "degree": 8, "color": "#6c5ce7"}, {"id": "主题/网络文学出海.md", "name": "网络文学出海", "cat": "主题", "src_count": 1, "degree": 8, "color": "#6c5ce7"}, {"id": "主题/跨文化阐释.md", "name": "跨文化阐释", "cat": "主题", "src_count": 1, "degree": 2, "color": "#6c5ce7"}, {"id": "主题/乡村振兴文学书写.md", "name": "乡村振兴文学书写", "cat": "主题", "src_count": 2, "degree": 12, "color": "#6c5ce7"}, {"id": "主题/新大众文艺.md", "name": "新大众文艺", "cat": "主题", "src_count": 25, "degree": 71, "color": "#6c5ce7"}, {"id": "主题/大文学观.md", "name": "大文学观", "cat": "主题", "src_count": 19, "degree": 31, "color": "#6c5ce7"}, {"id": "事件/第九届鲁迅文学奖.md", "name": "第九届鲁迅文学奖", "cat": "事件", "src_count": 25, "degree": 54, "color": "#ffd93d"}, {"id": "主题/俄罗斯文学在中国.md", "name": "俄罗斯文学在中国", "cat": "主题", "src_count": 1, "degree": 2, "color": "#6c5ce7"}, {"id": "主题/儿童文学.md", "name": "儿童文学", "cat": "主题", "src_count": 3, "degree": 8, "color": "#6c5ce7"}, {"id": "主题/古代中国儿童文学.md", "name": "古代中国儿童文学", "cat": "主题", "src_count": 1, "degree": 2, "color": "#6c5ce7"}, {"id": "人物/章文.md", "name": "章文", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/蒋风.md", "name": "蒋风", "cat": "人物", "src_count": 2, "degree": 4, "color": "#4ecdc4"}, {"id": "主题/农村能人.md", "name": "农村能人", "cat": "主题", "src_count": 1, "degree": 1, "color": "#6c5ce7"}, {"id": "机构/中国当代文学研究.md", "name": "中国当代文学研究", "cat": "机构", "src_count": 3, "degree": 12, "color": "#00b894"}, {"id": "主题/县域文学.md", "name": "县域文学", "cat": "主题", "src_count": 3, "degree": 2, "color": "#6c5ce7"}, {"id": "主题/城市文学.md", "name": "城市文学", "cat": "主题", "src_count": 2, "degree": 6, "color": "#6c5ce7"}, {"id": "主题/新乡土小说.md", "name": "新乡土小说", "cat": "主题", "src_count": 1, "degree": 6, "color": "#6c5ce7"}, {"id": "人物/陈伯吹.md", "name": "陈伯吹", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "人物/班宇.md", "name": "班宇", "cat": "人物", "src_count": 2, "degree": 3, "color": "#4ecdc4"}, {"id": "人物/谢宗玉.md", "name": "谢宗玉", "cat": "人物", "src_count": 2, "degree": 7, "color": "#4ecdc4"}, {"id": "人物/刘年.md", "name": "刘年", "cat": "人物", "src_count": 1, "degree": 4, "color": "#4ecdc4"}, {"id": "主题/大文学观与情感维度.md", "name": "大文学观与情感维度", "cat": "主题", "src_count": 1, "degree": 0, "color": "#6c5ce7"}, {"id": "主题/工业文学.md", "name": "工业文学", "cat": "主题", "src_count": 4, "degree": 5, "color": "#6c5ce7"}, {"id": "作品/断裂与延续中国工业遗产寻访记.md", "name": "断裂与延续：中国工业遗产寻访记", "cat": "作品", "src_count": 1, "degree": 4, "color": "#ff6b6b"}, {"id": "事件/工业遗产寻访记研讨会.md", "name": "《断裂与延续：中国工业遗产寻访记》研讨会", "cat": "事件", "src_count": 1, "degree": 4, "color": "#ffd93d"}, {"id": "主题/强军文学.md", "name": "强军文学", "cat": "主题", "src_count": 1, "degree": 1, "color": "#6c5ce7"}, {"id": "事件/新时代军事文学创作推进会.md", "name": "新时代军事文学创作推进会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "主题/报告文学.md", "name": "报告文学", "cat": "主题", "src_count": 2, "degree": 3, "color": "#6c5ce7"}, {"id": "事件/2025中国报告文学优秀榜单.md", "name": "2025中国暨江苏报告文学优秀榜单", "cat": "事件", "src_count": 3, "degree": 1, "color": "#ffd93d"}, {"id": "作品/鲁班出海.md", "name": "鲁班出海", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "主题/散文.md", "name": "散文", "cat": "主题", "src_count": 2, "degree": 4, "color": "#6c5ce7"}, {"id": "人物/范培松.md", "name": "范培松", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "主题/生态文学.md", "name": "生态文学", "cat": "主题", "src_count": 13, "degree": 23, "color": "#6c5ce7"}, {"id": "主题/文学与影视.md", "name": "文学与影视", "cat": "主题", "src_count": 7, "degree": 11, "color": "#6c5ce7"}, {"id": "主题/文学批评的边界.md", "name": "文学批评的边界", "cat": "主题", "src_count": 1, "degree": 1, "color": "#6c5ce7"}, {"id": "主题/文学读者.md", "name": "文学读者", "cat": "主题", "src_count": 1, "degree": 3, "color": "#6c5ce7"}, {"id": "主题/网络文学.md", "name": "网络文学", "cat": "主题", "src_count": 46, "degree": 28, "color": "#6c5ce7"}, {"id": "人物/柳青.md", "name": "柳青", "cat": "人物", "src_count": 2, "degree": 5, "color": "#4ecdc4"}, {"id": "主题/新南方写作.md", "name": "新南方写作", "cat": "主题", "src_count": 2, "degree": 6, "color": "#6c5ce7"}, {"id": "机构/漓江文学奖.md", "name": "漓江文学奖", "cat": "机构", "src_count": 1, "degree": 4, "color": "#00b894"}, {"id": "主题/海洋文学.md", "name": "海洋文学", "cat": "主题", "src_count": 3, "degree": 9, "color": "#6c5ce7"}, {"id": "人物/范雨素.md", "name": "范雨素", "cat": "人物", "src_count": 1, "degree": 4, "color": "#4ecdc4"}, {"id": "人物/袁凌.md", "name": "袁凌", "cat": "人物", "src_count": 1, "degree": 5, "color": "#4ecdc4"}, {"id": "人物/施洪丽.md", "name": "施洪丽", "cat": "人物", "src_count": 1, "degree": 4, "color": "#4ecdc4"}, {"id": "人物/小海.md", "name": "小海", "cat": "人物", "src_count": 2, "degree": 3, "color": "#4ecdc4"}, {"id": "人物/李文丽.md", "name": "李文丽", "cat": "人物", "src_count": 2, "degree": 3, "color": "#4ecdc4"}, {"id": "人物/麦家.md", "name": "麦家", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/王玉珍.md", "name": "王玉珍", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/瑛子.md", "name": "瑛子", "cat": "人物", "src_count": 2, "degree": 3, "color": "#4ecdc4"}, {"id": "主题/新现代主义研究.md", "name": "新现代主义研究", "cat": "主题", "src_count": 1, "degree": 2, "color": "#6c5ce7"}, {"id": "主题/新疆文学.md", "name": "新疆文学", "cat": "主题", "src_count": 1, "degree": 1, "color": "#6c5ce7"}, {"id": "人物/沈苇.md", "name": "沈苇", "cat": "人物", "src_count": 2, "degree": 2, "color": "#4ecdc4"}, {"id": "主题/残疾人文学.md", "name": "残疾人文学", "cat": "主题", "src_count": 2, "degree": 5, "color": "#6c5ce7"}, {"id": "事件/第四期鲁迅文学院残疾人作家研修班.md", "name": "第四期鲁迅文学院残疾人作家研修班", "cat": "事件", "src_count": 1, "degree": 4, "color": "#ffd93d"}, {"id": "事件/残疾人文学创作指导意见发布.md", "name": "《关于进一步支持残疾人文学创作的指导意见》印发", "cat": "事件", "src_count": 1, "degree": 4, "color": "#ffd93d"}, {"id": "主题/汪曾祺研究.md", "name": "汪曾祺研究", "cat": "主题", "src_count": 3, "degree": 2, "color": "#6c5ce7"}, {"id": "人物/郜元宝.md", "name": "郜元宝", "cat": "人物", "src_count": 2, "degree": 3, "color": "#4ecdc4"}, {"id": "人物/陈楸帆.md", "name": "陈楸帆", "cat": "人物", "src_count": 4, "degree": 4, "color": "#4ecdc4"}, {"id": "人物/叶玉琳.md", "name": "叶玉琳", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/赵德发.md", "name": "赵德发", "cat": "人物", "src_count": 3, "degree": 5, "color": "#4ecdc4"}, {"id": "主题/海风激荡南方崛起.md", "name": "海风激荡南方崛起", "cat": "主题", "src_count": 1, "degree": 1, "color": "#6c5ce7"}, {"id": "主题/现实主义.md", "name": "现实主义", "cat": "主题", "src_count": 1, "degree": 6, "color": "#6c5ce7"}, {"id": "人物/鲁迅.md", "name": "鲁迅", "cat": "人物", "src_count": 4, "degree": 12, "color": "#4ecdc4"}, {"id": "作品/子夜.md", "name": "子夜", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/陈启文.md", "name": "陈启文", "cat": "人物", "src_count": 2, "degree": 3, "color": "#4ecdc4"}, {"id": "人物/阿来.md", "name": "阿来", "cat": "人物", "src_count": 4, "degree": 6, "color": "#4ecdc4"}, {"id": "作品/另一种自然.md", "name": "另一种自然", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "主题/科幻文学.md", "name": "科幻文学", "cat": "主题", "src_count": 13, "degree": 14, "color": "#6c5ce7"}, {"id": "机构/冷湖科幻文学奖.md", "name": "冷湖科幻文学奖", "cat": "机构", "src_count": 1, "degree": 2, "color": "#00b894"}, {"id": "作品/浑天星途.md", "name": "浑天星途", "cat": "作品", "src_count": 1, "degree": 7, "color": "#ff6b6b"}, {"id": "主题/粤派批评.md", "name": "粤派批评", "cat": "主题", "src_count": 1, "degree": 4, "color": "#6c5ce7"}, {"id": "事件/第六届粤港澳大湾区文学周.md", "name": "第六届粤港澳大湾区文学周", "cat": "事件", "src_count": 6, "degree": 4, "color": "#ffd93d"}, {"id": "事件/2026中国网络文学论坛.md", "name": "2026中国网络文学论坛", "cat": "事件", "src_count": 1, "degree": 5, "color": "#ffd93d"}, {"id": "事件/网络文学研究分会第十一届年会.md", "name": "网络文学研究分会第十一届年会", "cat": "事件", "src_count": 2, "degree": 2, "color": "#ffd93d"}, {"id": "事件/第二届无界文学大赛.md", "name": "第二届无界文学大赛", "cat": "事件", "src_count": 1, "degree": 5, "color": "#ffd93d"}, {"id": "事件/远瞳知白纳兰若夕作品研讨.md", "name": "远瞳知白纳兰若夕作品研讨活动", "cat": "事件", "src_count": 1, "degree": 5, "color": "#ffd93d"}, {"id": "机构/阅文集团.md", "name": "阅文集团", "cat": "机构", "src_count": 1, "degree": 7, "color": "#00b894"}, {"id": "机构/晋江文学城.md", "name": "晋江文学城", "cat": "机构", "src_count": 2, "degree": 6, "color": "#00b894"}, {"id": "人物/无罪.md", "name": "无罪", "cat": "人物", "src_count": 2, "degree": 4, "color": "#4ecdc4"}, {"id": "人物/轻侯.md", "name": "轻侯", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "主题/网络文学IP转化.md", "name": "网络文学IP转化", "cat": "主题", "src_count": 1, "degree": 3, "color": "#6c5ce7"}, {"id": "主题/网络文学的趣感美学.md", "name": "网络文学的趣感美学", "cat": "主题", "src_count": 1, "degree": 1, "color": "#6c5ce7"}, {"id": "主题/网络文学类型.md", "name": "网络文学类型", "cat": "主题", "src_count": 3, "degree": 1, "color": "#6c5ce7"}, {"id": "主题/网络文学精品化.md", "name": "网络文学精品化", "cat": "主题", "src_count": 1, "degree": 2, "color": "#6c5ce7"}, {"id": "主题/访谈播客.md", "name": "访谈播客", "cat": "主题", "src_count": 4, "degree": 3, "color": "#6c5ce7"}, {"id": "事件/鲁迅文学周上海篇.md", "name": "鲁迅文学周上海篇", "cat": "事件", "src_count": 11, "degree": 7, "color": "#ffd93d"}, {"id": "人物/谢冕.md", "name": "谢冕", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "主题/诗歌与短视频.md", "name": "诗歌与短视频", "cat": "主题", "src_count": 1, "degree": 4, "color": "#6c5ce7"}, {"id": "人物/张二棍.md", "name": "张二棍", "cat": "人物", "src_count": 2, "degree": 4, "color": "#4ecdc4"}, {"id": "人物/王计兵.md", "name": "王计兵", "cat": "人物", "src_count": 9, "degree": 8, "color": "#4ecdc4"}, {"id": "主题/逸剑风云决.md", "name": "逸剑风云决", "cat": "主题", "src_count": 1, "degree": 0, "color": "#6c5ce7"}, {"id": "事件/2022中国文学盛典鲁迅文学奖之夜.md", "name": "2022中国文学盛典鲁迅文学奖之夜", "cat": "事件", "src_count": 1, "degree": 0, "color": "#ffd93d"}, {"id": "事件/2025中国网络文学蓝皮书发布.md", "name": "2025中国网络文学蓝皮书发布", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/2025文学理论评论高频词.md", "name": "2025年文学理论评论高频词", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/2026上海书展.md", "name": "2026上海书展", "cat": "事件", "src_count": 6, "degree": 7, "color": "#ffd93d"}, {"id": "事件/不死的麦子陀思妥耶夫斯基对谈.md", "name": "\"不死的麦子：陀思妥耶夫斯基与我们的时代\"对谈", "cat": "事件", "src_count": 1, "degree": 3, "color": "#ffd93d"}, {"id": "事件/2026北京国际文学院联盟年会.md", "name": "2026北京国际文学院联盟年会", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "机构/北京老舍文学院.md", "name": "北京老舍文学院", "cat": "机构", "src_count": 2, "degree": 4, "color": "#00b894"}, {"id": "事件/2026文学中国跨年盛典.md", "name": "2026「文学·中国」跨年盛典", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "人物/莫言.md", "name": "莫言", "cat": "人物", "src_count": 4, "degree": 7, "color": "#4ecdc4"}, {"id": "事件/2026陕西文学周.md", "name": "2026陕西文学周", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/AI时代文学何为.md", "name": "AI时代文学何为分享会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "人物/鲁敏.md", "name": "鲁敏", "cat": "人物", "src_count": 3, "degree": 4, "color": "#4ecdc4"}, {"id": "事件/BIBF梁晓声王干对谈.md", "name": "BIBF梁晓声王干对谈", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/第32届BIBF中国作家馆.md", "name": "第32届BIBF中国作家馆", "cat": "事件", "src_count": 2, "degree": 3, "color": "#ffd93d"}, {"id": "事件/《中国作家》新大众文艺与大文学观座谈会.md", "name": "《中国作家》新大众文艺与大文学观座谈会", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/七猫文化亮相上海书展.md", "name": "七猫文化亮相上海书展", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/上海文学馆开幕.md", "name": "上海文学馆开幕", "cat": "事件", "src_count": 7, "degree": 3, "color": "#ffd93d"}, {"id": "事件/世界文学与人类命运共同体座谈会.md", "name": "世界文学与人类命运共同体座谈会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/东坡故里九月诗会.md", "name": "东坡故里九月诗会", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/全国知名作家秦皇岛行.md", "name": "全国知名作家秦皇岛行", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/中国作协.md", "name": "中国作协春节走访老作家老同志", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/中国作协第二次理事会议.md", "name": "中国作协第二次理事会议", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/中国作家协会2026年新会员名单.md", "name": "中国作家协会2026年新会员名单", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "人物/三三.md", "name": "三三", "cat": "人物", "src_count": 2, "degree": 2, "color": "#4ecdc4"}, {"id": "事件/中国作家网文学好书.md", "name": "中国作家网文学好书", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/中国作家驻村计划.md", "name": "中国作家驻村计划", "cat": "事件", "src_count": 2, "degree": 3, "color": "#ffd93d"}, {"id": "事件/中国式现代化与文学的力量座谈会.md", "name": "中国式现代化与文学的力量座谈会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/中国当代文学研究会年榜2025.md", "name": "中国当代文学研究会年度榜单（2025）", "cat": "事件", "src_count": 2, "degree": 3, "color": "#ffd93d"}, {"id": "事件/中国文学新力量主题活动.md", "name": "中国文学新力量主题活动", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/中国文学新力量系列活动.md", "name": "中国文学新力量系列活动", "cat": "事件", "src_count": 1, "degree": 5, "color": "#ffd93d"}, {"id": "人物/邱华栋.md", "name": "邱华栋", "cat": "人物", "src_count": 4, "degree": 8, "color": "#4ecdc4"}, {"id": "事件/中国日报网中国文学英文专页上线.md", "name": "中国日报网「中国文学」英文专页上线", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/中国话语与世界文学研究丛书分享会.md", "name": "中国话语与世界文学研究丛书分享会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/中墨作家诗歌之声对谈.md", "name": "中墨作家诗歌之声对谈", "cat": "事件", "src_count": 1, "degree": 4, "color": "#ffd93d"}, {"id": "人物/吉狄马加.md", "name": "吉狄马加", "cat": "人物", "src_count": 2, "degree": 4, "color": "#4ecdc4"}, {"id": "事件/墨西哥文学周走进中国.md", "name": "墨西哥文学周走进中国", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/人民文学人民阅卷活动.md", "name": "人民文学人民阅卷活动", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "人物/陈涛.md", "name": "陈涛", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "事件/俄苏文学书友会.md", "name": "俄苏文学书友会", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/俞敏诗歌研讨会.md", "name": "俞敏诗歌研讨会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "机构/浙江文学馆.md", "name": "浙江文学馆", "cat": "机构", "src_count": 2, "degree": 9, "color": "#00b894"}, {"id": "事件/全勇先创作分享会.md", "name": "全勇先创作分享会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "人物/全勇先.md", "name": "全勇先", "cat": "人物", "src_count": 4, "degree": 6, "color": "#4ecdc4"}, {"id": "事件/全勇先抗战题材作品研讨会.md", "name": "全勇先抗战题材作品研讨会", "cat": "事件", "src_count": 1, "degree": 3, "color": "#ffd93d"}, {"id": "人物/迟子建.md", "name": "迟子建", "cat": "人物", "src_count": 1, "degree": 4, "color": "#4ecdc4"}, {"id": "事件/第三届黑龙江冰雪文学周.md", "name": "第三届黑龙江冰雪文学周", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/全勇先读者分享交流会.md", "name": "全勇先·读者分享交流会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/全国文学院联盟年会.md", "name": "全国文学院联盟年会", "cat": "事件", "src_count": 1, "degree": 3, "color": "#ffd93d"}, {"id": "事件/关于鲁迅系列讲座.md", "name": "关于鲁迅系列讲座", "cat": "事件", "src_count": 1, "degree": 6, "color": "#ffd93d"}, {"id": "人物/罗岗.md", "name": "罗岗", "cat": "人物", "src_count": 1, "degree": 4, "color": "#4ecdc4"}, {"id": "机构/中国左翼作家联盟.md", "name": "中国左翼作家联盟", "cat": "机构", "src_count": 1, "degree": 3, "color": "#00b894"}, {"id": "事件/北京老舍文学院第七届中青年作家高研班.md", "name": "北京老舍文学院第七届中青年作家高研班", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/南京世界文学客厅2026七夕游园会.md", "name": "南京世界文学客厅2026七夕游园会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/2026思南文学月.md", "name": "2026思南文学月", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/国际文学周主论坛.md", "name": "国际文学周主论坛", "cat": "事件", "src_count": 1, "degree": 0, "color": "#ffd93d"}, {"id": "事件/圉庐作家书法馆揭牌.md", "name": "圉庐·作家书法馆揭牌暨田中禾书法捐赠仪式", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "人物/田中禾.md", "name": "田中禾", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "事件/多国作家上海国际文学周.md", "name": "多国作家上海国际文学周", "cat": "事件", "src_count": 1, "degree": 0, "color": "#ffd93d"}, {"id": "事件/大地行歌文学志愿服务.md", "name": "大地行歌文学志愿服务", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/大师对话鲁迅遇见高尔基.md", "name": "大师对话：当鲁迅遇见高尔基", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/大文学观访谈林森.md", "name": "大文学观访谈林森", "cat": "事件", "src_count": 1, "degree": 4, "color": "#ffd93d"}, {"id": "人物/林森.md", "name": "林森", "cat": "人物", "src_count": 1, "degree": 6, "color": "#4ecdc4"}, {"id": "事件/大河上源和美甘南散文诗文学实践.md", "name": "大河上源和美甘南散文诗文学实践", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/天津文学破圈有道.md", "name": "天津文学破圈有道", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "机构/天津文学.md", "name": "天津文学", "cat": "机构", "src_count": 2, "degree": 8, "color": "#00b894"}, {"id": "事件/孙惠芬与新时代乡土文学创作研讨会.md", "name": "孙惠芬与新时代乡土文学创作研讨会", "cat": "事件", "src_count": 1, "degree": 3, "color": "#ffd93d"}, {"id": "人物/孙惠芬.md", "name": "孙惠芬", "cat": "人物", "src_count": 1, "degree": 4, "color": "#4ecdc4"}, {"id": "事件/寿春杯小说选刊年度大奖.md", "name": "寿春杯·小说选刊年度大奖", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "人物/东西.md", "name": "东西", "cat": "人物", "src_count": 4, "degree": 4, "color": "#4ecdc4"}, {"id": "事件/平遥影展迁徙计划.md", "name": "平遥影展迁徙计划", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/扬子江文学评论2025年度文学排行榜.md", "name": "扬子江文学评论2025年度文学排行榜", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "人物/陈彦.md", "name": "陈彦", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "事件/扬帆计划文学沙龙.md", "name": "扬帆计划文学沙龙", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/文学京彩季大家小课.md", "name": "文学京彩季大家小课", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "概念/人工智能文学.md", "name": "人工智能文学", "cat": "概念", "src_count": 2, "degree": 3, "color": "#e17055"}, {"id": "事件/文学县场.md", "name": "文学县场", "cat": "事件", "src_count": 2, "degree": 1, "color": "#ffd93d"}, {"id": "事件/文学报年度好书榜.md", "name": "文学报年度好书榜", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "人物/梁鸿.md", "name": "梁鸿", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/戴从容.md", "name": "戴从容", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "事件/文学行馕出圈上海书展.md", "name": "文学行馕出圈上海书展", "cat": "事件", "src_count": 1, "degree": 0, "color": "#ffd93d"}, {"id": "事件/文心大讲堂第六期.md", "name": "文心大讲堂第六期", "cat": "事件", "src_count": 1, "degree": 4, "color": "#ffd93d"}, {"id": "人物/霍俊明.md", "name": "霍俊明", "cat": "人物", "src_count": 1, "degree": 4, "color": "#4ecdc4"}, {"id": "事件/新世纪文学历史化研讨会.md", "name": "世界视野与新世纪文学的历史化学术研讨会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/新时代全国文学名家座谈会.md", "name": "新时代全国文学名家座谈会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/新时代文学期刊转型与发展研讨会.md", "name": "新时代文学期刊转型与发展研讨会", "cat": "事件", "src_count": 1, "degree": 6, "color": "#ffd93d"}, {"id": "机构/湖南文学.md", "name": "湖南文学", "cat": "机构", "src_count": 3, "degree": 6, "color": "#00b894"}, {"id": "事件/新时代文学研究海外译介会.md", "name": "新时代文学研究海外译介会", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "机构/新时代文学研究中心.md", "name": "新时代文学研究中心", "cat": "机构", "src_count": 1, "degree": 6, "color": "#00b894"}, {"id": "事件/春回大地改稿会.md", "name": "春回大地改稿会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/朔州生态文学采风.md", "name": "朔州生态文学采风", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/朝向大地研讨会.md", "name": "朝向大地研讨会", "cat": "事件", "src_count": 1, "degree": 3, "color": "#ffd93d"}, {"id": "作品/朝向大地.md", "name": "朝向大地", "cat": "作品", "src_count": 1, "degree": 5, "color": "#ff6b6b"}, {"id": "人物/徐良.md", "name": "徐良", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "事件/李燕燕隐形的孩子研讨会.md", "name": "李燕燕报告文学《「隐形」的孩子》研讨会", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "作品/隐形的孩子.md", "name": "隐形的孩子", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "事件/杨键一粒种子文学交流活动.md", "name": "杨键诗集《一粒种子》文学交流活动", "cat": "事件", "src_count": 1, "degree": 4, "color": "#ffd93d"}, {"id": "人物/杨键.md", "name": "杨键", "cat": "人物", "src_count": 1, "degree": 4, "color": "#4ecdc4"}, {"id": "作品/一粒种子.md", "name": "一粒种子", "cat": "作品", "src_count": 1, "degree": 4, "color": "#ff6b6b"}, {"id": "事件/桫椤网络文学批评研讨活动.md", "name": "桫椤网络文学批评研讨活动", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/武汉出版社儿童文学品牌.md", "name": "武汉出版社儿童文学品牌", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/民族文学大家读刊会.md", "name": "民族文学大家读刊会", "cat": "事件", "src_count": 2, "degree": 4, "color": "#ffd93d"}, {"id": "作品/赛坎的老风口.md", "name": "赛坎的老风口", "cat": "作品", "src_count": 1, "degree": 3, "color": "#ff6b6b"}, {"id": "事件/民族文学走进稀土之都.md", "name": "民族文学走进稀土之都", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "主题/民族文学批评.md", "name": "民族文学批评", "cat": "主题", "src_count": 2, "degree": 3, "color": "#6c5ce7"}, {"id": "事件/河北中短篇小说创作研讨会.md", "name": "河北中短篇小说创作研讨会", "cat": "事件", "src_count": 1, "degree": 0, "color": "#ffd93d"}, {"id": "事件/河北文学出版融合发展战略合作.md", "name": "河北文学出版融合发展战略合作", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "人物/李浩然.md", "name": "李浩然", "cat": "人物", "src_count": 2, "degree": 3, "color": "#4ecdc4"}, {"id": "事件/清明新皖军文学笔会.md", "name": "清明新皖军文学笔会", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/清溪村党建赋能.md", "name": "清溪村党建赋能", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/清溪村农民作家培育计划.md", "name": "清溪村农民作家培育计划", "cat": "事件", "src_count": 2, "degree": 2, "color": "#ffd93d"}, {"id": "事件/澳门青年作家在地创作计划.md", "name": "澳门故事——青年作家在地创作培育计划", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "人物/毕飞宇.md", "name": "毕飞宇", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "事件/王月鹏海洋文学研讨会.md", "name": "王月鹏海洋文学创作研讨会", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/王蒙文学数字体验馆开馆.md", "name": "王蒙文学数字体验馆开馆", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/生态文学分会成立.md", "name": "中国生态文明研究与促进会生态文学分会成立", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/皮村新工人文学小组.md", "name": "皮村新工人文学小组", "cat": "事件", "src_count": 1, "degree": 7, "color": "#ffd93d"}, {"id": "事件/知名作家看法院采风.md", "name": "「知名作家看法院」创作采风活动", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/种粮记首发.md", "name": "种粮记首发式", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/科右前旗少年文学那达慕.md", "name": "科右前旗少年文学那达慕", "cat": "事件", "src_count": 1, "degree": 0, "color": "#ffd93d"}, {"id": "事件/科幻文学大众化讨论.md", "name": "科幻文学距离大众化还有多远讨论", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/第三届中国网络文学品牌榜.md", "name": "第三届中国网络文学品牌榜", "cat": "事件", "src_count": 2, "degree": 1, "color": "#ffd93d"}, {"id": "事件/第三届五指山生态文学周.md", "name": "第三届五指山生态文学周", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/第九届飞天名刊名家改稿会.md", "name": "第九届飞天名刊名家改稿会", "cat": "事件", "src_count": 1, "degree": 7, "color": "#ffd93d"}, {"id": "机构/飞天.md", "name": "飞天", "cat": "机构", "src_count": 1, "degree": 4, "color": "#00b894"}, {"id": "人物/胡弦.md", "name": "胡弦", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/张楚.md", "name": "张楚", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "事件/第二十届世界文学年度报告.md", "name": "第二十届世界文学年度报告", "cat": "事件", "src_count": 2, "degree": 2, "color": "#ffd93d"}, {"id": "人物/路内.md", "name": "路内", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/黄咏梅.md", "name": "黄咏梅", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "事件/第十一届著名作家看山西采风活动.md", "name": "第十一届著名作家看山西采风活动", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "人物/舒晋瑜.md", "name": "舒晋瑜", "cat": "人物", "src_count": 2, "degree": 5, "color": "#4ecdc4"}, {"id": "事件/第十五届唐弢青年文学研究奖.md", "name": "第十五届唐弢青年文学研究奖", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/第四届中国工业与科幻文学大赛.md", "name": "第四届中国工业与科幻文学大赛主题宣传活动", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/老舍文学院第七届中青年作家高研班.md", "name": "老舍文学院第七届中青年作家高研班", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/胡松夏诗歌现象沙龙.md", "name": "胡松夏诗歌现象沙龙", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/能不忆江南首发.md", "name": "能不忆江南新书首发式", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/花语书坊巡展.md", "name": "花语书坊巡展", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/英雄山研讨会.md", "name": "英雄山研讨会", "cat": "事件", "src_count": 1, "degree": 0, "color": "#ffd93d"}, {"id": "事件/莫应丰文学艺术馆开馆.md", "name": "莫应丰文学艺术馆开馆", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "人物/莫应丰.md", "name": "莫应丰", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "事件/莫言人呐京东分享会.md", "name": "莫言《人呐》京东图书分享会", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/萧红与中国当代文学活动.md", "name": "「她走过无数人间：萧红与中国当代文学」活动", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "人物/萧红.md", "name": "萧红", "cat": "人物", "src_count": 4, "degree": 6, "color": "#4ecdc4"}, {"id": "事件/著名作家抵达文学县场.md", "name": "著名作家抵达文学县场", "cat": "事件", "src_count": 3, "degree": 1, "color": "#ffd93d"}, {"id": "事件/董小潭天滋研讨会.md", "name": "董小潭长篇小说《天滋》研讨会", "cat": "事件", "src_count": 1, "degree": 3, "color": "#ffd93d"}, {"id": "作品/天滋.md", "name": "天滋", "cat": "作品", "src_count": 1, "degree": 3, "color": "#ff6b6b"}, {"id": "事件/赵树理文学奖2022-2024.md", "name": "2022-2024年度赵树理文学奖", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "人物/赵树理.md", "name": "赵树理", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/何弘.md", "name": "何弘", "cat": "人物", "src_count": 2, "degree": 4, "color": "#4ecdc4"}, {"id": "事件/长江沿线作家专家聚首.md", "name": "长江沿线作家专家聚首", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/青年文学贵州改稿班.md", "name": "青年文学贵州改稿班", "cat": "事件", "src_count": 1, "degree": 2, "color": "#ffd93d"}, {"id": "事件/香港文学500期座谈会.md", "name": "《香港文学》500期座谈会", "cat": "事件", "src_count": 1, "degree": 4, "color": "#ffd93d"}, {"id": "机构/香港文学.md", "name": "《香港文学》", "cat": "机构", "src_count": 1, "degree": 4, "color": "#00b894"}, {"id": "人物/刘以鬯.md", "name": "刘以鬯", "cat": "人物", "src_count": 1, "degree": 4, "color": "#4ecdc4"}, {"id": "事件/鲁迅与茅盾文学对话展.md", "name": "鲁迅与茅盾文学对话展", "cat": "事件", "src_count": 1, "degree": 4, "color": "#ffd93d"}, {"id": "事件/鲁迅文学周.md", "name": "鲁迅文学周", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "事件/鲁迅文学奖永久落户上海.md", "name": "鲁迅文学奖永久落户上海", "cat": "事件", "src_count": 2, "degree": 0, "color": "#ffd93d"}, {"id": "事件/鲁迅精神与网络文学的百年对话.md", "name": "鲁迅精神与网络文学的百年对话", "cat": "事件", "src_count": 2, "degree": 4, "color": "#ffd93d"}, {"id": "事件/鲁院湖南儿童文学高研班.md", "name": "鲁迅文学院湖南儿童文学创作高级研修班", "cat": "事件", "src_count": 2, "degree": 1, "color": "#ffd93d"}, {"id": "事件/黄蓓佳作品出海三十周年.md", "name": "黄蓓佳作品出海三十周年", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "人物/丁捷.md", "name": "丁捷", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/乌兰其木格.md", "name": "乌兰其木格", "cat": "人物", "src_count": 1, "degree": 0, "color": "#4ecdc4"}, {"id": "人物/人邻.md", "name": "人邻", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/去东北记.md", "name": "去东北记", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/休·刘易斯-琼斯.md", "name": "休·刘易斯-琼斯", "cat": "人物", "src_count": 2, "degree": 3, "color": "#4ecdc4"}, {"id": "主题/文学地标旅游.md", "name": "文学地标旅游", "cat": "主题", "src_count": 3, "degree": 1, "color": "#6c5ce7"}, {"id": "事件/上海国际文学周.md", "name": "上海国际文学周", "cat": "事件", "src_count": 2, "degree": 1, "color": "#ffd93d"}, {"id": "人物/何玉茹.md", "name": "何玉茹", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/傅羽.md", "name": "傅羽", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/抵达.md", "name": "抵达", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/傅菲.md", "name": "傅菲", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/傅逸尘.md", "name": "傅逸尘", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/储福金.md", "name": "储福金", "cat": "人物", "src_count": 3, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/冯仰操.md", "name": "冯仰操", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/汪曾祺.md", "name": "汪曾祺", "cat": "人物", "src_count": 3, "degree": 4, "color": "#4ecdc4"}, {"id": "人物/冯骥才.md", "name": "冯骥才", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "作品/俗世奇人.md", "name": "俗世奇人", "cat": "作品", "src_count": 1, "degree": 3, "color": "#ff6b6b"}, {"id": "人物/刘思言.md", "name": "刘思言", "cat": "人物", "src_count": 1, "degree": 0, "color": "#4ecdc4"}, {"id": "人物/刘慈欣.md", "name": "刘慈欣", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "人物/刘晓宇.md", "name": "刘晓宇", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/刘洪波.md", "name": "刘洪波", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "作品/拉夫尔.md", "name": "拉夫尔", "cat": "作品", "src_count": 2, "degree": 3, "color": "#ff6b6b"}, {"id": "人物/刘诗利.md", "name": "刘诗利", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/刘震云.md", "name": "刘震云", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/包倬.md", "name": "包倬", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/卓今.md", "name": "卓今", "cat": "人物", "src_count": 3, "degree": 4, "color": "#4ecdc4"}, {"id": "作品/劳者歌其事.md", "name": "劳者歌其事", "cat": "作品", "src_count": 3, "degree": 5, "color": "#ff6b6b"}, {"id": "人物/吉米平阶.md", "name": "吉米平阶", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/幸福的旋律.md", "name": "幸福的旋律", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/吕铮.md", "name": "吕铮", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/梦探.md", "name": "梦探", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/哲贵.md", "name": "哲贵", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/姚瑶.md", "name": "姚瑶", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/村超.md", "name": "村超", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/季栋梁.md", "name": "季栋梁", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/宝树.md", "name": "宝树", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/庞羽.md", "name": "庞羽", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/刘珍与范明.md", "name": "刘珍与范明", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/廖奔.md", "name": "廖奔", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/山河行走.md", "name": "山河行走", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/张映勤.md", "name": "张映勤", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/张芸.md", "name": "张芸", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/张锐锋.md", "name": "张锐锋", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/彭程.md", "name": "彭程", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/徐朔方.md", "name": "徐朔方", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/明代文学史.md", "name": "明代文学史", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/普玄.md", "name": "普玄", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/朱强.md", "name": "朱强", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/行云.md", "name": "行云", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/朱永富.md", "name": "朱永富", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/李恒昌.md", "name": "李恒昌", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/李景平.md", "name": "李景平", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/一泓清水入黄河.md", "name": "一泓清水入黄河", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/李铁.md", "name": "李铁", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/匠户志.md", "name": "匠户志", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/束沛德.md", "name": "束沛德", "cat": "人物", "src_count": 2, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/杨庆祥.md", "name": "杨庆祥", "cat": "人物", "src_count": 2, "degree": 3, "color": "#4ecdc4"}, {"id": "作品/必将有人重写南方.md", "name": "必将有人重写南方", "cat": "作品", "src_count": 1, "degree": 3, "color": "#ff6b6b"}, {"id": "人物/杨洁茹.md", "name": "杨洁茹", "cat": "人物", "src_count": 1, "degree": 0, "color": "#4ecdc4"}, {"id": "人物/杨献平.md", "name": "杨献平", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "机构/福建文学.md", "name": "福建文学", "cat": "机构", "src_count": 2, "degree": 3, "color": "#00b894"}, {"id": "人物/杨辉.md", "name": "杨辉", "cat": "人物", "src_count": 4, "degree": 3, "color": "#4ecdc4"}, {"id": "作品/总体性与社会主义文学传统.md", "name": "总体性与社会主义文学传统", "cat": "作品", "src_count": 3, "degree": 3, "color": "#ff6b6b"}, {"id": "人物/林希.md", "name": "林希", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "人物/韩少功.md", "name": "韩少功", "cat": "人物", "src_count": 1, "degree": 4, "color": "#4ecdc4"}, {"id": "人物/林那北.md", "name": "林那北", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/格非.md", "name": "格非", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/登春台.md", "name": "登春台", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/梁小斌.md", "name": "梁小斌", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/江非.md", "name": "江非", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/洪子诚.md", "name": "洪子诚", "cat": "人物", "src_count": 2, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/猫不秃.md", "name": "猫不秃", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/王家新.md", "name": "王家新", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/王干.md", "name": "王干", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/王德威.md", "name": "王德威", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/黄锦树.md", "name": "黄锦树", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "人物/王月鹏.md", "name": "王月鹏", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/王清平.md", "name": "王清平", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/流转.md", "name": "流转", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "机构/北京文学.md", "name": "北京文学", "cat": "机构", "src_count": 3, "degree": 2, "color": "#00b894"}, {"id": "人物/畀愚.md", "name": "畀愚", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "作品/纯真年代.md", "name": "纯真年代", "cat": "作品", "src_count": 1, "degree": 3, "color": "#ff6b6b"}, {"id": "人物/石舒清.md", "name": "石舒清", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/四个放映员和一个观众.md", "name": "四个放映员和一个观众", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/程苏东.md", "name": "程苏东", "cat": "人物", "src_count": 1, "degree": 0, "color": "#4ecdc4"}, {"id": "人物/童庆炳.md", "name": "童庆炳", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "人物/余华.md", "name": "余华", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/纪红建.md", "name": "纪红建", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/村道.md", "name": "村道——在浙江探寻中国乡村的现在和未来", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/罗伟章.md", "name": "罗伟章", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/老藤.md", "name": "老藤", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/自愈者.md", "name": "自愈者", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/肖克凡.md", "name": "肖克凡", "cat": "人物", "src_count": 4, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/胡安焉.md", "name": "胡安焉", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/胡性能.md", "name": "胡性能", "cat": "人物", "src_count": 3, "degree": 4, "color": "#4ecdc4"}, {"id": "作品/梦里花落知多少.md", "name": "梦里花落知多少", "cat": "作品", "src_count": 1, "degree": 4, "color": "#ff6b6b"}, {"id": "人物/胡松涛.md", "name": "胡松涛", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/臧杰.md", "name": "臧杰", "cat": "人物", "src_count": 1, "degree": 0, "color": "#4ecdc4"}, {"id": "作品/从夹缝到通途.md", "name": "从夹缝到通途", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/艾伟.md", "name": "艾伟", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "作品/春歌.md", "name": "春歌", "cat": "作品", "src_count": 2, "degree": 5, "color": "#ff6b6b"}, {"id": "人物/艾平.md", "name": "艾平", "cat": "人物", "src_count": 2, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/艾玛.md", "name": "艾玛", "cat": "人物", "src_count": 2, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/芒原.md", "name": "芒原", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/范稳.md", "name": "范稳", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/青云梯.md", "name": "青云梯", "cat": "作品", "src_count": 1, "degree": 3, "color": "#ff6b6b"}, {"id": "人物/茅盾.md", "name": "茅盾", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/孟繁华.md", "name": "孟繁华", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/张鹏禹.md", "name": "张鹏禹", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "主题/东北文学.md", "name": "东北文学", "cat": "主题", "src_count": 2, "degree": 1, "color": "#6c5ce7"}, {"id": "人物/蒲隆.md", "name": "蒲隆", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/薛舒.md", "name": "薛舒", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/袁筱一.md", "name": "袁筱一", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/谢宜兴.md", "name": "谢宜兴", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "作品/疾病是一所学校.md", "name": "疾病是一所学校", "cat": "作品", "src_count": 1, "degree": 3, "color": "#ff6b6b"}, {"id": "人物/谢有顺.md", "name": "谢有顺", "cat": "人物", "src_count": 4, "degree": 5, "color": "#4ecdc4"}, {"id": "作品/文学的深意.md", "name": "文学的深意", "cat": "作品", "src_count": 2, "degree": 4, "color": "#ff6b6b"}, {"id": "人物/贺仲明.md", "name": "贺仲明", "cat": "人物", "src_count": 3, "degree": 3, "color": "#4ecdc4"}, {"id": "作品/文学的风景与思想的风致.md", "name": "文学的风景与思想的风致", "cat": "作品", "src_count": 2, "degree": 3, "color": "#ff6b6b"}, {"id": "人物/赖继.md", "name": "赖继", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/赵丽宏.md", "name": "赵丽宏", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/为母亲作画.md", "name": "为母亲作画", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/超侠.md", "name": "超侠", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "作品/朋友们来看雪吧.md", "name": "朋友们来看雪吧", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/郭晓琦.md", "name": "郭晓琦", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "人物/闻一多.md", "name": "闻一多", "cat": "人物", "src_count": 1, "degree": 0, "color": "#4ecdc4"}, {"id": "人物/阎晶明.md", "name": "阎晶明", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/阿贝尔.md", "name": "阿贝尔", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/陆文锦.md", "name": "陆文锦", "cat": "人物", "src_count": 1, "degree": 0, "color": "#4ecdc4"}, {"id": "人物/陆蔚青.md", "name": "陆蔚青", "cat": "人物", "src_count": 2, "degree": 4, "color": "#4ecdc4"}, {"id": "作品/穿透雪.md", "name": "穿透雪", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "作品/海如是.md", "name": "海如是", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/陈崇正.md", "name": "陈崇正", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/英歌饭.md", "name": "英歌饭", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/陈应松.md", "name": "陈应松", "cat": "人物", "src_count": 2, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/在群山之间.md", "name": "在群山之间", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "人物/韩松刚.md", "name": "韩松刚", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/马识途.md", "name": "马识途", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/高临阳.md", "name": "高临阳", "cat": "人物", "src_count": 1, "degree": 3, "color": "#4ecdc4"}, {"id": "作品/神不使.md", "name": "神不使", "cat": "作品", "src_count": 1, "degree": 3, "color": "#ff6b6b"}, {"id": "机构/上海文学.md", "name": "上海文学", "cat": "机构", "src_count": 2, "degree": 2, "color": "#00b894"}, {"id": "作品/此时此刻.md", "name": "此时此刻", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "作品/接待奈保尔的两天.md", "name": "接待奈保尔的两天", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/黄桂元.md", "name": "黄桂元", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "人物/黄礼孩.md", "name": "黄礼孩", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/犹如夜鹰迁徙.md", "name": "犹如夜鹰迁徙", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "作品/中国新时代文学理论话语建构研究.md", "name": "中国新时代文学理论话语建构研究", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/亲爱的女孩.md", "name": "亲爱的女孩", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/霍君.md", "name": "霍君", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/你好青年医生.md", "name": "你好，青年医生", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/李琭璐.md", "name": "李琭璐", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/八千年的凝视.md", "name": "八千年的凝视", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/冥想辞.md", "name": "冥想辞", "cat": "作品", "src_count": 1, "degree": 0, "color": "#ff6b6b"}, {"id": "作品/南音.md", "name": "南音", "cat": "作品", "src_count": 1, "degree": 0, "color": "#ff6b6b"}, {"id": "作品/国宝·山鸣谷应.md", "name": "国宝·山鸣谷应", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/夜奔.md", "name": "夜奔", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/指尖.md", "name": "指尖", "cat": "人物", "src_count": 1, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/大河源.md", "name": "大河源", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "作品/大海风.md", "name": "大海风", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "作品/大漠芳华.md", "name": "大漠芳华", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/天才游乐场.md", "name": "天才游乐场", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/天生斯民.md", "name": "天生斯民", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/客途.md", "name": "客途", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/对读：新时代长篇小说十二部.md", "name": "对读：新时代长篇小说十二部", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/寻渡.md", "name": "寻渡", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/叶剑秀.md", "name": "叶剑秀", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/寻羊记.md", "name": "寻羊记", "cat": "作品", "src_count": 1, "degree": 3, "color": "#ff6b6b"}, {"id": "作品/梵音重响.md", "name": "梵音重响", "cat": "作品", "src_count": 1, "degree": 4, "color": "#ff6b6b"}, {"id": "作品/麦收之后.md", "name": "麦收之后", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "作品/岭南十三讲.md", "name": "岭南十三讲", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/叶兆言.md", "name": "叶兆言", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/平静面对一张白纸.md", "name": "平静面对一张白纸", "cat": "作品", "src_count": 1, "degree": 0, "color": "#ff6b6b"}, {"id": "作品/惊白.md", "name": "惊白", "cat": "作品", "src_count": 1, "degree": 0, "color": "#ff6b6b"}, {"id": "作品/文学的临潭.md", "name": "文学的临潭", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/徐则臣.md", "name": "徐则臣", "cat": "人物", "src_count": 2, "degree": 2, "color": "#4ecdc4"}, {"id": "作品/旅途诗草.md", "name": "旅途诗草", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/杨角.md", "name": "杨角", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/晃树.md", "name": "晃树", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/毕海林.md", "name": "毕海林", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/有意于爱.md", "name": "有意于爱", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/杜秀兰.md", "name": "杜秀兰", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/杜立特行动大救援.md", "name": "杜立特行动大救援", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/徐锦庚.md", "name": "徐锦庚", "cat": "人物", "src_count": 2, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/海客行.md", "name": "海客行", "cat": "作品", "src_count": 1, "degree": 3, "color": "#ff6b6b"}, {"id": "人物/贺绍俊.md", "name": "贺绍俊", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/猛犸象.md", "name": "猛犸象", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/猴命.md", "name": "猴命", "cat": "作品", "src_count": 1, "degree": 2, "color": "#ff6b6b"}, {"id": "作品/玫瑰与繁霜.md", "name": "玫瑰与繁霜", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/生命奇迹.md", "name": "生命奇迹", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/朱群英.md", "name": "朱群英", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/秘密.md", "name": "秘密", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/窈窕之章.md", "name": "窈窕之章", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/杨不寒.md", "name": "杨不寒", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/荒原.md", "name": "荒原", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "主题/巴勒斯坦文学与文学政治.md", "name": "巴勒斯坦文学与文学政治", "cat": "主题", "src_count": 1, "degree": 1, "color": "#6c5ce7"}, {"id": "作品/虚室.md", "name": "虚室", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/栗鹿.md", "name": "栗鹿", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/见世面.md", "name": "见世面", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/董永智.md", "name": "董永智", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/赵波.md", "name": "赵波", "cat": "作品", "src_count": 1, "degree": 0, "color": "#ff6b6b"}, {"id": "作品/重新醒来的一天.md", "name": "重新醒来的一天", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/闪念.md", "name": "闪念", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/林莽.md", "name": "林莽", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/闪水桥.md", "name": "闪水桥", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/董永红.md", "name": "董永红", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/陨石博物馆.md", "name": "陨石博物馆", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "人物/王奕凯.md", "name": "王奕凯", "cat": "人物", "src_count": 1, "degree": 1, "color": "#4ecdc4"}, {"id": "作品/隐迹.md", "name": "隐迹", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/风从江上来.md", "name": "风从江上来——长江大保护江苏实践", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/洗澡.md", "name": "洗澡", "cat": "作品", "src_count": 1, "degree": 1, "color": "#ff6b6b"}, {"id": "作品/黄亚香.md", "name": "黄亚香", "cat": "作品", "src_count": 1, "degree": 0, "color": "#ff6b6b"}, {"id": "机构/中国网络文学交流中心.md", "name": "中国网络文学交流中心（温州）", "cat": "机构", "src_count": 1, "degree": 2, "color": "#00b894"}, {"id": "机构/人民文学.md", "name": "《人民文学》杂志", "cat": "机构", "src_count": 1, "degree": 3, "color": "#00b894"}, {"id": "机构/广西作家协会.md", "name": "广西作家协会", "cat": "机构", "src_count": 1, "degree": 1, "color": "#00b894"}, {"id": "机构/新时代山乡巨变创作计划.md", "name": "新时代山乡巨变创作计划", "cat": "机构", "src_count": 2, "degree": 2, "color": "#00b894"}, {"id": "机构/新时代文学攀登计划.md", "name": "新时代文学攀登计划", "cat": "机构", "src_count": 2, "degree": 4, "color": "#00b894"}, {"id": "机构/木兰书院.md", "name": "木兰书院", "cat": "机构", "src_count": 1, "degree": 2, "color": "#00b894"}, {"id": "机构/民族文学.md", "name": "民族文学", "cat": "机构", "src_count": 1, "degree": 1, "color": "#00b894"}, {"id": "事件/湖南文学创阅中心揭牌.md", "name": "湖南文学创阅中心揭牌", "cat": "事件", "src_count": 1, "degree": 1, "color": "#ffd93d"}, {"id": "机构/青年文学.md", "name": "青年文学", "cat": "机构", "src_count": 2, "degree": 2, "color": "#00b894"}, {"id": "概念/文学性.md", "name": "文学性", "cat": "概念", "src_count": 1, "degree": 1, "color": "#e17055"}, {"id": "概念/走向田野.md", "name": "走向田野", "cat": "概念", "src_count": 1, "degree": 2, "color": "#e17055"}, {"id": "流派/寻根文学.md", "name": "寻根文学", "cat": "流派", "src_count": 1, "degree": 1, "color": "#a29bfe"}], "edges": [{"source": "主题/AI文学叙事革命.md", "target": "概念/人工智能人文学.md"}, {"source": "主题/中国文学译介.md", "target": "主题/网络文学出海.md"}, {"source": "主题/中国文学译介.md", "target": "主题/跨文化阐释.md"}, {"source": "主题/乡村振兴文学书写.md", "target": "主题/新大众文艺.md"}, {"source": "主题/乡村振兴文学书写.md", "target": "主题/大文学观.md"}, {"source": "主题/乡村振兴文学书写.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "主题/俄罗斯文学在中国.md", "target": "主题/中国文学译介.md"}, {"source": "主题/儿童文学.md", "target": "主题/古代中国儿童文学.md"}, {"source": "主题/儿童文学.md", "target": "人物/章文.md"}, {"source": "主题/儿童文学.md", "target": "人物/蒋风.md"}, {"source": "主题/农村能人.md", "target": "机构/中国当代文学研究.md"}, {"source": "主题/县域文学.md", "target": "主题/城市文学.md"}, {"source": "主题/县域文学.md", "target": "主题/新乡土小说.md"}, {"source": "主题/古代中国儿童文学.md", "target": "人物/陈伯吹.md"}, {"source": "主题/城市文学.md", "target": "主题/新大众文艺.md"}, {"source": "主题/城市文学.md", "target": "人物/班宇.md"}, {"source": "主题/大文学观.md", "target": "机构/中国当代文学研究.md"}, {"source": "主题/大文学观.md", "target": "人物/谢宗玉.md"}, {"source": "主题/大文学观.md", "target": "人物/刘年.md"}, {"source": "主题/工业文学.md", "target": "作品/断裂与延续中国工业遗产寻访记.md"}, {"source": "主题/工业文学.md", "target": "事件/工业遗产寻访记研讨会.md"}, {"source": "主题/强军文学.md", "target": "事件/新时代军事文学创作推进会.md"}, {"source": "主题/报告文学.md", "target": "事件/2025中国报告文学优秀榜单.md"}, {"source": "主题/报告文学.md", "target": "作品/鲁班出海.md"}, {"source": "主题/散文.md", "target": "人物/范培松.md"}, {"source": "主题/散文.md", "target": "主题/生态文学.md"}, {"source": "主题/散文.md", "target": "主题/新大众文艺.md"}, {"source": "主题/文学与影视.md", "target": "概念/人工智能人文学.md"}, {"source": "主题/文学批评的边界.md", "target": "主题/新大众文艺.md"}, {"source": "主题/文学读者.md", "target": "主题/新大众文艺.md"}, {"source": "主题/文学读者.md", "target": "主题/网络文学.md"}, {"source": "主题/新乡土小说.md", "target": "人物/柳青.md"}, {"source": "主题/新乡土小说.md", "target": "主题/新大众文艺.md"}, {"source": "主题/新南方写作.md", "target": "机构/漓江文学奖.md"}, {"source": "主题/新南方写作.md", "target": "主题/海洋文学.md"}, {"source": "主题/新南方写作.md", "target": "主题/中国文学译介.md"}, {"source": "主题/新大众文艺.md", "target": "人物/范雨素.md"}, {"source": "主题/新大众文艺.md", "target": "人物/袁凌.md"}, {"source": "主题/新大众文艺.md", "target": "人物/施洪丽.md"}, {"source": "主题/新大众文艺.md", "target": "人物/小海.md"}, {"source": "主题/新大众文艺.md", "target": "人物/李文丽.md"}, {"source": "主题/新大众文艺.md", "target": "人物/麦家.md"}, {"source": "主题/新大众文艺.md", "target": "人物/王玉珍.md"}, {"source": "主题/新大众文艺.md", "target": "人物/瑛子.md"}, {"source": "主题/新现代主义研究.md", "target": "主题/中国文学译介.md"}, {"source": "主题/新现代主义研究.md", "target": "主题/跨文化阐释.md"}, {"source": "主题/新疆文学.md", "target": "人物/沈苇.md"}, {"source": "主题/残疾人文学.md", "target": "事件/第四期鲁迅文学院残疾人作家研修班.md"}, {"source": "主题/残疾人文学.md", "target": "事件/残疾人文学创作指导意见发布.md"}, {"source": "主题/残疾人文学.md", "target": "主题/新大众文艺.md"}, {"source": "主题/汪曾祺研究.md", "target": "人物/郜元宝.md"}, {"source": "主题/海洋文学.md", "target": "主题/生态文学.md"}, {"source": "主题/海洋文学.md", "target": "人物/陈楸帆.md"}, {"source": "主题/海洋文学.md", "target": "人物/叶玉琳.md"}, {"source": "主题/海洋文学.md", "target": "人物/赵德发.md"}, {"source": "主题/海风激荡南方崛起.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "主题/现实主义.md", "target": "人物/柳青.md"}, {"source": "主题/现实主义.md", "target": "人物/鲁迅.md"}, {"source": "主题/现实主义.md", "target": "作品/子夜.md"}, {"source": "主题/现实主义.md", "target": "主题/新大众文艺.md"}, {"source": "主题/生态文学.md", "target": "主题/乡村振兴文学书写.md"}, {"source": "主题/生态文学.md", "target": "人物/陈启文.md"}, {"source": "主题/生态文学.md", "target": "人物/阿来.md"}, {"source": "主题/生态文学.md", "target": "作品/另一种自然.md"}, {"source": "主题/科幻文学.md", "target": "主题/AI文学叙事革命.md"}, {"source": "主题/科幻文学.md", "target": "机构/冷湖科幻文学奖.md"}, {"source": "主题/科幻文学.md", "target": "作品/浑天星途.md"}, {"source": "主题/科幻文学.md", "target": "人物/陈楸帆.md"}, {"source": "主题/科幻文学.md", "target": "人物/阿来.md"}, {"source": "主题/粤派批评.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "主题/粤派批评.md", "target": "事件/第六届粤港澳大湾区文学周.md"}, {"source": "主题/网络文学.md", "target": "事件/2026中国网络文学论坛.md"}, {"source": "主题/网络文学.md", "target": "事件/网络文学研究分会第十一届年会.md"}, {"source": "主题/网络文学.md", "target": "事件/第二届无界文学大赛.md"}, {"source": "主题/网络文学.md", "target": "事件/远瞳知白纳兰若夕作品研讨.md"}, {"source": "主题/网络文学.md", "target": "机构/阅文集团.md"}, {"source": "主题/网络文学.md", "target": "机构/晋江文学城.md"}, {"source": "主题/网络文学.md", "target": "人物/无罪.md"}, {"source": "主题/网络文学.md", "target": "人物/轻侯.md"}, {"source": "主题/网络文学IP转化.md", "target": "主题/网络文学.md"}, {"source": "主题/网络文学出海.md", "target": "主题/网络文学.md"}, {"source": "主题/网络文学出海.md", "target": "主题/新大众文艺.md"}, {"source": "主题/网络文学的趣感美学.md", "target": "主题/网络文学.md"}, {"source": "主题/网络文学类型.md", "target": "主题/网络文学.md"}, {"source": "主题/访谈播客.md", "target": "事件/鲁迅文学周上海篇.md"}, {"source": "主题/访谈播客.md", "target": "人物/谢冕.md"}, {"source": "主题/诗歌与短视频.md", "target": "主题/大文学观.md"}, {"source": "主题/诗歌与短视频.md", "target": "主题/新大众文艺.md"}, {"source": "主题/诗歌与短视频.md", "target": "人物/张二棍.md"}, {"source": "主题/诗歌与短视频.md", "target": "人物/王计兵.md"}, {"source": "事件/2025中国网络文学蓝皮书发布.md", "target": "主题/网络文学.md"}, {"source": "事件/2025中国网络文学蓝皮书发布.md", "target": "主题/网络文学出海.md"}, {"source": "事件/2025文学理论评论高频词.md", "target": "主题/新大众文艺.md"}, {"source": "事件/2025文学理论评论高频词.md", "target": "主题/大文学观.md"}, {"source": "事件/2026上海书展.md", "target": "机构/阅文集团.md"}, {"source": "事件/2026上海书展.md", "target": "事件/不死的麦子陀思妥耶夫斯基对谈.md"}, {"source": "事件/2026中国网络文学论坛.md", "target": "主题/新大众文艺.md"}, {"source": "事件/2026中国网络文学论坛.md", "target": "机构/阅文集团.md"}, {"source": "事件/2026北京国际文学院联盟年会.md", "target": "机构/北京老舍文学院.md"}, {"source": "事件/2026文学中国跨年盛典.md", "target": "人物/莫言.md"}, {"source": "事件/2026陕西文学周.md", "target": "主题/大文学观.md"}, {"source": "事件/AI时代文学何为.md", "target": "人物/鲁敏.md"}, {"source": "事件/BIBF梁晓声王干对谈.md", "target": "事件/第32届BIBF中国作家馆.md"}, {"source": "事件/《中国作家》新大众文艺与大文学观座谈会.md", "target": "主题/大文学观.md"}, {"source": "事件/《中国作家》新大众文艺与大文学观座谈会.md", "target": "主题/新大众文艺.md"}, {"source": "事件/七猫文化亮相上海书展.md", "target": "主题/新大众文艺.md"}, {"source": "事件/七猫文化亮相上海书展.md", "target": "事件/2026上海书展.md"}, {"source": "事件/不死的麦子陀思妥耶夫斯基对谈.md", "target": "主题/俄罗斯文学在中国.md"}, {"source": "事件/世界文学与人类命运共同体座谈会.md", "target": "主题/网络文学出海.md"}, {"source": "事件/东坡故里九月诗会.md", "target": "事件/全国知名作家秦皇岛行.md"}, {"source": "事件/中国作协.md", "target": "主题/新大众文艺.md"}, {"source": "事件/中国作协第二次理事会议.md", "target": "机构/中国当代文学研究.md"}, {"source": "事件/中国作家协会2026年新会员名单.md", "target": "人物/瑛子.md"}, {"source": "事件/中国作家协会2026年新会员名单.md", "target": "人物/三三.md"}, {"source": "事件/中国作家网文学好书.md", "target": "机构/中国当代文学研究.md"}, {"source": "事件/中国作家驻村计划.md", "target": "主题/乡村振兴文学书写.md"}, {"source": "事件/中国作家驻村计划.md", "target": "主题/新大众文艺.md"}, {"source": "事件/中国式现代化与文学的力量座谈会.md", "target": "主题/新大众文艺.md"}, {"source": "事件/中国当代文学研究会年榜2025.md", "target": "主题/新大众文艺.md"}, {"source": "事件/中国当代文学研究会年榜2025.md", "target": "主题/大文学观.md"}, {"source": "事件/中国文学新力量主题活动.md", "target": "主题/文学与影视.md"}, {"source": "事件/中国文学新力量系列活动.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "事件/中国文学新力量系列活动.md", "target": "主题/文学与影视.md"}, {"source": "事件/中国文学新力量系列活动.md", "target": "主题/新大众文艺.md"}, {"source": "事件/中国文学新力量系列活动.md", "target": "人物/邱华栋.md"}, {"source": "事件/中国日报网中国文学英文专页上线.md", "target": "主题/网络文学出海.md"}, {"source": "事件/中国话语与世界文学研究丛书分享会.md", "target": "主题/中国文学译介.md"}, {"source": "事件/中墨作家诗歌之声对谈.md", "target": "人物/吉狄马加.md"}, {"source": "事件/中墨作家诗歌之声对谈.md", "target": "事件/墨西哥文学周走进中国.md"}, {"source": "事件/人民文学人民阅卷活动.md", "target": "主题/新大众文艺.md"}, {"source": "事件/人民文学人民阅卷活动.md", "target": "人物/陈涛.md"}, {"source": "事件/俄苏文学书友会.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "事件/俄苏文学书友会.md", "target": "人物/邱华栋.md"}, {"source": "事件/俞敏诗歌研讨会.md", "target": "机构/浙江文学馆.md"}, {"source": "事件/全勇先创作分享会.md", "target": "人物/全勇先.md"}, {"source": "事件/全勇先抗战题材作品研讨会.md", "target": "人物/全勇先.md"}, {"source": "事件/全勇先抗战题材作品研讨会.md", "target": "人物/迟子建.md"}, {"source": "事件/全勇先抗战题材作品研讨会.md", "target": "事件/第三届黑龙江冰雪文学周.md"}, {"source": "事件/全勇先读者分享交流会.md", "target": "人物/全勇先.md"}, {"source": "事件/全国文学院联盟年会.md", "target": "主题/大文学观.md"}, {"source": "事件/全国文学院联盟年会.md", "target": "主题/新大众文艺.md"}, {"source": "事件/关于鲁迅系列讲座.md", "target": "事件/鲁迅文学周上海篇.md"}, {"source": "事件/关于鲁迅系列讲座.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "事件/关于鲁迅系列讲座.md", "target": "人物/罗岗.md"}, {"source": "事件/关于鲁迅系列讲座.md", "target": "机构/中国左翼作家联盟.md"}, {"source": "事件/北京老舍文学院第七届中青年作家高研班.md", "target": "机构/北京老舍文学院.md"}, {"source": "事件/南京世界文学客厅2026七夕游园会.md", "target": "事件/2026思南文学月.md"}, {"source": "事件/圉庐作家书法馆揭牌.md", "target": "人物/田中禾.md"}, {"source": "事件/大地行歌文学志愿服务.md", "target": "主题/新大众文艺.md"}, {"source": "事件/大师对话鲁迅遇见高尔基.md", "target": "人物/鲁迅.md"}, {"source": "事件/大文学观访谈林森.md", "target": "主题/大文学观.md"}, {"source": "事件/大文学观访谈林森.md", "target": "人物/林森.md"}, {"source": "事件/大河上源和美甘南散文诗文学实践.md", "target": "主题/生态文学.md"}, {"source": "事件/天津文学破圈有道.md", "target": "机构/天津文学.md"}, {"source": "事件/孙惠芬与新时代乡土文学创作研讨会.md", "target": "人物/孙惠芬.md"}, {"source": "事件/孙惠芬与新时代乡土文学创作研讨会.md", "target": "主题/新乡土小说.md"}, {"source": "事件/寿春杯小说选刊年度大奖.md", "target": "人物/东西.md"}, {"source": "事件/寿春杯小说选刊年度大奖.md", "target": "主题/新大众文艺.md"}, {"source": "事件/工业遗产寻访记研讨会.md", "target": "作品/断裂与延续中国工业遗产寻访记.md"}, {"source": "事件/平遥影展迁徙计划.md", "target": "主题/文学与影视.md"}, {"source": "事件/平遥影展迁徙计划.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "事件/扬子江文学评论2025年度文学排行榜.md", "target": "人物/陈彦.md"}, {"source": "事件/扬子江文学评论2025年度文学排行榜.md", "target": "事件/中国当代文学研究会年榜2025.md"}, {"source": "事件/扬帆计划文学沙龙.md", "target": "事件/第32届BIBF中国作家馆.md"}, {"source": "事件/文学京彩季大家小课.md", "target": "概念/人工智能文学.md"}, {"source": "事件/文学县场.md", "target": "主题/新大众文艺.md"}, {"source": "事件/文学报年度好书榜.md", "target": "人物/梁鸿.md"}, {"source": "事件/文学报年度好书榜.md", "target": "人物/戴从容.md"}, {"source": "事件/文心大讲堂第六期.md", "target": "人物/霍俊明.md"}, {"source": "事件/文心大讲堂第六期.md", "target": "机构/浙江文学馆.md"}, {"source": "事件/新世纪文学历史化研讨会.md", "target": "主题/大文学观.md"}, {"source": "事件/新时代全国文学名家座谈会.md", "target": "主题/大文学观.md"}, {"source": "事件/新时代文学期刊转型与发展研讨会.md", "target": "主题/大文学观.md"}, {"source": "事件/新时代文学期刊转型与发展研讨会.md", "target": "主题/新大众文艺.md"}, {"source": "事件/新时代文学期刊转型与发展研讨会.md", "target": "人物/谢宗玉.md"}, {"source": "事件/新时代文学期刊转型与发展研讨会.md", "target": "机构/湖南文学.md"}, {"source": "事件/新时代文学研究海外译介会.md", "target": "机构/新时代文学研究中心.md"}, {"source": "事件/新时代文学研究海外译介会.md", "target": "主题/大文学观.md"}, {"source": "事件/春回大地改稿会.md", "target": "主题/乡村振兴文学书写.md"}, {"source": "事件/朔州生态文学采风.md", "target": "主题/生态文学.md"}, {"source": "事件/朝向大地研讨会.md", "target": "作品/朝向大地.md"}, {"source": "事件/朝向大地研讨会.md", "target": "人物/徐良.md"}, {"source": "事件/李燕燕隐形的孩子研讨会.md", "target": "作品/隐形的孩子.md"}, {"source": "事件/杨键一粒种子文学交流活动.md", "target": "人物/杨键.md"}, {"source": "事件/杨键一粒种子文学交流活动.md", "target": "作品/一粒种子.md"}, {"source": "事件/桫椤网络文学批评研讨活动.md", "target": "主题/网络文学.md"}, {"source": "事件/桫椤网络文学批评研讨活动.md", "target": "主题/新大众文艺.md"}, {"source": "事件/武汉出版社儿童文学品牌.md", "target": "主题/新大众文艺.md"}, {"source": "事件/残疾人文学创作指导意见发布.md", "target": "事件/第四期鲁迅文学院残疾人作家研修班.md"}, {"source": "事件/民族文学大家读刊会.md", "target": "作品/赛坎的老风口.md"}, {"source": "事件/民族文学大家读刊会.md", "target": "主题/大文学观.md"}, {"source": "事件/民族文学走进稀土之都.md", "target": "主题/民族文学批评.md"}, {"source": "事件/河北文学出版融合发展战略合作.md", "target": "人物/李浩然.md"}, {"source": "事件/清明新皖军文学笔会.md", "target": "主题/大文学观.md"}, {"source": "事件/清明新皖军文学笔会.md", "target": "主题/新大众文艺.md"}, {"source": "事件/清溪村党建赋能.md", "target": "主题/新大众文艺.md"}, {"source": "事件/清溪村农民作家培育计划.md", "target": "主题/新大众文艺.md"}, {"source": "事件/清溪村农民作家培育计划.md", "target": "主题/乡村振兴文学书写.md"}, {"source": "事件/澳门青年作家在地创作计划.md", "target": "人物/毕飞宇.md"}, {"source": "事件/王月鹏海洋文学研讨会.md", "target": "主题/海洋文学.md"}, {"source": "事件/王蒙文学数字体验馆开馆.md", "target": "机构/浙江文学馆.md"}, {"source": "事件/生态文学分会成立.md", "target": "主题/生态文学.md"}, {"source": "事件/皮村新工人文学小组.md", "target": "主题/新大众文艺.md"}, {"source": "事件/皮村新工人文学小组.md", "target": "人物/范雨素.md"}, {"source": "事件/皮村新工人文学小组.md", "target": "人物/袁凌.md"}, {"source": "事件/知名作家看法院采风.md", "target": "主题/新大众文艺.md"}, {"source": "事件/种粮记首发.md", "target": "主题/乡村振兴文学书写.md"}, {"source": "事件/科幻文学大众化讨论.md", "target": "主题/科幻文学.md"}, {"source": "事件/第三届中国网络文学品牌榜.md", "target": "主题/网络文学.md"}, {"source": "事件/第三届五指山生态文学周.md", "target": "主题/生态文学.md"}, {"source": "事件/第三届五指山生态文学周.md", "target": "事件/朔州生态文学采风.md"}, {"source": "事件/第九届飞天名刊名家改稿会.md", "target": "机构/飞天.md"}, {"source": "事件/第九届飞天名刊名家改稿会.md", "target": "人物/胡弦.md"}, {"source": "事件/第九届飞天名刊名家改稿会.md", "target": "人物/张楚.md"}, {"source": "事件/第二十届世界文学年度报告.md", "target": "人物/路内.md"}, {"source": "事件/第二届无界文学大赛.md", "target": "人物/黄咏梅.md"}, {"source": "事件/第二届无界文学大赛.md", "target": "主题/新大众文艺.md"}, {"source": "事件/第六届粤港澳大湾区文学周.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "事件/第六届粤港澳大湾区文学周.md", "target": "主题/新大众文艺.md"}, {"source": "事件/第十一届著名作家看山西采风活动.md", "target": "人物/舒晋瑜.md"}, {"source": "事件/第十五届唐弢青年文学研究奖.md", "target": "人物/邱华栋.md"}, {"source": "事件/第四届中国工业与科幻文学大赛.md", "target": "主题/工业文学.md"}, {"source": "事件/第四届中国工业与科幻文学大赛.md", "target": "主题/科幻文学.md"}, {"source": "事件/老舍文学院第七届中青年作家高研班.md", "target": "事件/全国文学院联盟年会.md"}, {"source": "事件/老舍文学院第七届中青年作家高研班.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "事件/胡松夏诗歌现象沙龙.md", "target": "主题/新大众文艺.md"}, {"source": "事件/胡松夏诗歌现象沙龙.md", "target": "主题/大文学观.md"}, {"source": "事件/能不忆江南首发.md", "target": "主题/生态文学.md"}, {"source": "事件/能不忆江南首发.md", "target": "主题/乡村振兴文学书写.md"}, {"source": "事件/花语书坊巡展.md", "target": "机构/中国当代文学研究.md"}, {"source": "事件/莫应丰文学艺术馆开馆.md", "target": "人物/莫应丰.md"}, {"source": "事件/莫言人呐京东分享会.md", "target": "人物/莫言.md"}, {"source": "事件/萧红与中国当代文学活动.md", "target": "人物/萧红.md"}, {"source": "事件/著名作家抵达文学县场.md", "target": "主题/新大众文艺.md"}, {"source": "事件/董小潭天滋研讨会.md", "target": "作品/天滋.md"}, {"source": "事件/董小潭天滋研讨会.md", "target": "主题/新大众文艺.md"}, {"source": "事件/赵树理文学奖2022-2024.md", "target": "人物/赵树理.md"}, {"source": "事件/远瞳知白纳兰若夕作品研讨.md", "target": "人物/何弘.md"}, {"source": "事件/远瞳知白纳兰若夕作品研讨.md", "target": "主题/网络文学精品化.md"}, {"source": "事件/长江沿线作家专家聚首.md", "target": "主题/新大众文艺.md"}, {"source": "事件/青年文学贵州改稿班.md", "target": "主题/新大众文艺.md"}, {"source": "事件/青年文学贵州改稿班.md", "target": "概念/人工智能人文学.md"}, {"source": "事件/香港文学500期座谈会.md", "target": "机构/香港文学.md"}, {"source": "事件/香港文学500期座谈会.md", "target": "人物/刘以鬯.md"}, {"source": "事件/鲁迅与茅盾文学对话展.md", "target": "人物/鲁迅.md"}, {"source": "事件/鲁迅与茅盾文学对话展.md", "target": "作品/子夜.md"}, {"source": "事件/鲁迅与茅盾文学对话展.md", "target": "机构/浙江文学馆.md"}, {"source": "事件/鲁迅精神与网络文学的百年对话.md", "target": "事件/鲁迅文学周.md"}, {"source": "事件/鲁迅精神与网络文学的百年对话.md", "target": "事件/鲁迅文学周上海篇.md"}, {"source": "事件/鲁迅精神与网络文学的百年对话.md", "target": "主题/网络文学.md"}, {"source": "事件/鲁迅精神与网络文学的百年对话.md", "target": "主题/网络文学出海.md"}, {"source": "事件/鲁院湖南儿童文学高研班.md", "target": "主题/儿童文学.md"}, {"source": "事件/黄蓓佳作品出海三十周年.md", "target": "主题/儿童文学.md"}, {"source": "人物/丁捷.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/三三.md", "target": "主题/城市文学.md"}, {"source": "人物/东西.md", "target": "主题/中国文学译介.md"}, {"source": "人物/东西.md", "target": "机构/新时代文学研究中心.md"}, {"source": "人物/人邻.md", "target": "作品/去东北记.md"}, {"source": "人物/休·刘易斯-琼斯.md", "target": "主题/文学地标旅游.md"}, {"source": "人物/休·刘易斯-琼斯.md", "target": "事件/2026上海书展.md"}, {"source": "人物/休·刘易斯-琼斯.md", "target": "事件/上海国际文学周.md"}, {"source": "人物/何弘.md", "target": "主题/网络文学.md"}, {"source": "人物/何弘.md", "target": "事件/2026中国网络文学论坛.md"}, {"source": "人物/何玉茹.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/傅羽.md", "target": "作品/抵达.md"}, {"source": "人物/傅菲.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/傅逸尘.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/傅逸尘.md", "target": "主题/大文学观.md"}, {"source": "人物/储福金.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/全勇先.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/全勇先.md", "target": "主题/文学与影视.md"}, {"source": "人物/冯仰操.md", "target": "人物/汪曾祺.md"}, {"source": "人物/冯骥才.md", "target": "作品/俗世奇人.md"}, {"source": "人物/刘以鬯.md", "target": "机构/香港文学.md"}, {"source": "人物/刘年.md", "target": "人物/谢宗玉.md"}, {"source": "人物/刘慈欣.md", "target": "主题/科幻文学.md"}, {"source": "人物/刘慈欣.md", "target": "作品/浑天星途.md"}, {"source": "人物/刘晓宇.md", "target": "主题/新大众文艺.md"}, {"source": "人物/刘洪波.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/刘洪波.md", "target": "作品/拉夫尔.md"}, {"source": "人物/刘诗利.md", "target": "主题/新大众文艺.md"}, {"source": "人物/刘震云.md", "target": "事件/花语书坊巡展.md"}, {"source": "人物/包倬.md", "target": "主题/民族文学批评.md"}, {"source": "人物/卓今.md", "target": "作品/劳者歌其事.md"}, {"source": "人物/卓今.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/卓今.md", "target": "主题/新大众文艺.md"}, {"source": "人物/叶玉琳.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/吉狄马加.md", "target": "主题/民族文学批评.md"}, {"source": "人物/吉狄马加.md", "target": "人物/邱华栋.md"}, {"source": "人物/吉米平阶.md", "target": "作品/幸福的旋律.md"}, {"source": "人物/吕铮.md", "target": "作品/梦探.md"}, {"source": "人物/哲贵.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/姚瑶.md", "target": "作品/村超.md"}, {"source": "人物/孙惠芬.md", "target": "主题/新乡土小说.md"}, {"source": "人物/孙惠芬.md", "target": "主题/现实主义.md"}, {"source": "人物/季栋梁.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/宝树.md", "target": "主题/科幻文学.md"}, {"source": "人物/宝树.md", "target": "作品/浑天星途.md"}, {"source": "人物/小海.md", "target": "人物/王计兵.md"}, {"source": "人物/庞羽.md", "target": "作品/刘珍与范明.md"}, {"source": "人物/廖奔.md", "target": "作品/山河行走.md"}, {"source": "人物/张二棍.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/张二棍.md", "target": "主题/大文学观.md"}, {"source": "人物/张映勤.md", "target": "机构/天津文学.md"}, {"source": "人物/张楚.md", "target": "机构/天津文学.md"}, {"source": "人物/张芸.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/张锐锋.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/彭程.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/徐朔方.md", "target": "作品/明代文学史.md"}, {"source": "人物/徐良.md", "target": "作品/朝向大地.md"}, {"source": "人物/戴从容.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/施洪丽.md", "target": "事件/皮村新工人文学小组.md"}, {"source": "人物/无罪.md", "target": "主题/网络文学IP转化.md"}, {"source": "人物/无罪.md", "target": "主题/网络文学精品化.md"}, {"source": "人物/普玄.md", "target": "主题/生态文学.md"}, {"source": "人物/朱强.md", "target": "作品/行云.md"}, {"source": "人物/朱永富.md", "target": "人物/姚瑶.md"}, {"source": "人物/李文丽.md", "target": "事件/皮村新工人文学小组.md"}, {"source": "人物/李景平.md", "target": "作品/一泓清水入黄河.md"}, {"source": "人物/李铁.md", "target": "作品/匠户志.md"}, {"source": "人物/束沛德.md", "target": "人物/陈伯吹.md"}, {"source": "人物/束沛德.md", "target": "主题/儿童文学.md"}, {"source": "人物/杨庆祥.md", "target": "主题/新南方写作.md"}, {"source": "人物/杨庆祥.md", "target": "作品/必将有人重写南方.md"}, {"source": "人物/杨献平.md", "target": "机构/福建文学.md"}, {"source": "人物/杨辉.md", "target": "作品/总体性与社会主义文学传统.md"}, {"source": "人物/杨辉.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/杨键.md", "target": "作品/一粒种子.md"}, {"source": "人物/林希.md", "target": "机构/天津文学.md"}, {"source": "人物/林希.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/林希.md", "target": "作品/俗世奇人.md"}, {"source": "人物/林森.md", "target": "主题/大文学观.md"}, {"source": "人物/林森.md", "target": "人物/韩少功.md"}, {"source": "人物/林那北.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/柳青.md", "target": "主题/新大众文艺.md"}, {"source": "人物/格非.md", "target": "作品/登春台.md"}, {"source": "人物/梁小斌.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/梁鸿.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/江非.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/汪曾祺.md", "target": "主题/汪曾祺研究.md"}, {"source": "人物/汪曾祺.md", "target": "人物/郜元宝.md"}, {"source": "人物/沈苇.md", "target": "主题/生态文学.md"}, {"source": "人物/洪子诚.md", "target": "机构/中国当代文学研究.md"}, {"source": "人物/猫不秃.md", "target": "主题/网络文学.md"}, {"source": "人物/王家新.md", "target": "机构/浙江文学馆.md"}, {"source": "人物/王干.md", "target": "事件/中国作家驻村计划.md"}, {"source": "人物/王德威.md", "target": "人物/黄锦树.md"}, {"source": "人物/王月鹏.md", "target": "主题/海洋文学.md"}, {"source": "人物/王清平.md", "target": "作品/流转.md"}, {"source": "人物/王计兵.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/王计兵.md", "target": "事件/鲁迅文学周上海篇.md"}, {"source": "人物/王计兵.md", "target": "主题/新大众文艺.md"}, {"source": "人物/王计兵.md", "target": "人物/张二棍.md"}, {"source": "人物/王计兵.md", "target": "机构/北京文学.md"}, {"source": "人物/班宇.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/畀愚.md", "target": "作品/纯真年代.md"}, {"source": "人物/畀愚.md", "target": "主题/文学与影视.md"}, {"source": "人物/石舒清.md", "target": "作品/四个放映员和一个观众.md"}, {"source": "人物/童庆炳.md", "target": "人物/莫言.md"}, {"source": "人物/童庆炳.md", "target": "人物/余华.md"}, {"source": "人物/童庆炳.md", "target": "主题/大文学观.md"}, {"source": "人物/纪红建.md", "target": "作品/村道.md"}, {"source": "人物/罗伟章.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/罗岗.md", "target": "机构/中国左翼作家联盟.md"}, {"source": "人物/老藤.md", "target": "作品/自愈者.md"}, {"source": "人物/肖克凡.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/胡安焉.md", "target": "主题/新大众文艺.md"}, {"source": "人物/胡性能.md", "target": "作品/梦里花落知多少.md"}, {"source": "人物/胡性能.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/胡松涛.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/舒晋瑜.md", "target": "作品/从夹缝到通途.md"}, {"source": "人物/艾伟.md", "target": "作品/春歌.md"}, {"source": "人物/艾伟.md", "target": "事件/上海文学馆开幕.md"}, {"source": "人物/艾平.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/艾玛.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/芒原.md", "target": "主题/生态文学.md"}, {"source": "人物/范稳.md", "target": "作品/青云梯.md"}, {"source": "人物/茅盾.md", "target": "人物/鲁迅.md"}, {"source": "人物/莫言.md", "target": "事件/2026上海书展.md"}, {"source": "人物/莫言.md", "target": "主题/文学与影视.md"}, {"source": "人物/萧红.md", "target": "人物/鲁迅.md"}, {"source": "人物/萧红.md", "target": "人物/孟繁华.md"}, {"source": "人物/萧红.md", "target": "人物/舒晋瑜.md"}, {"source": "人物/萧红.md", "target": "人物/张鹏禹.md"}, {"source": "人物/萧红.md", "target": "主题/东北文学.md"}, {"source": "人物/蒋风.md", "target": "主题/大文学观.md"}, {"source": "人物/蒋风.md", "target": "人物/陈伯吹.md"}, {"source": "人物/蒲隆.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/薛舒.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/袁凌.md", "target": "人物/施洪丽.md"}, {"source": "人物/袁筱一.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/谢宗玉.md", "target": "作品/劳者歌其事.md"}, {"source": "人物/谢宜兴.md", "target": "作品/疾病是一所学校.md"}, {"source": "人物/谢宜兴.md", "target": "机构/福建文学.md"}, {"source": "人物/谢有顺.md", "target": "作品/文学的深意.md"}, {"source": "人物/谢有顺.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/谢有顺.md", "target": "主题/粤派批评.md"}, {"source": "人物/贺仲明.md", "target": "作品/文学的风景与思想的风致.md"}, {"source": "人物/贺仲明.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/赖继.md", "target": "主题/文学与影视.md"}, {"source": "人物/赵丽宏.md", "target": "作品/为母亲作画.md"}, {"source": "人物/赵德发.md", "target": "主题/文学与影视.md"}, {"source": "人物/赵德发.md", "target": "人物/李恒昌.md"}, {"source": "人物/超侠.md", "target": "作品/浑天星途.md"}, {"source": "人物/超侠.md", "target": "主题/科幻文学.md"}, {"source": "人物/轻侯.md", "target": "机构/晋江文学城.md"}, {"source": "人物/迟子建.md", "target": "作品/朋友们来看雪吧.md"}, {"source": "人物/邱华栋.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/邱华栋.md", "target": "主题/文学与影视.md"}, {"source": "人物/邱华栋.md", "target": "事件/鲁迅文学周上海篇.md"}, {"source": "人物/郜元宝.md", "target": "人物/鲁迅.md"}, {"source": "人物/郭晓琦.md", "target": "机构/飞天.md"}, {"source": "人物/郭晓琦.md", "target": "事件/第九届飞天名刊名家改稿会.md"}, {"source": "人物/阎晶明.md", "target": "人物/鲁迅.md"}, {"source": "人物/阿贝尔.md", "target": "主题/生态文学.md"}, {"source": "人物/陆蔚青.md", "target": "作品/穿透雪.md"}, {"source": "人物/陆蔚青.md", "target": "作品/海如是.md"}, {"source": "人物/陈启文.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/陈崇正.md", "target": "作品/英歌饭.md"}, {"source": "人物/陈应松.md", "target": "主题/生态文学.md"}, {"source": "人物/陈楸帆.md", "target": "主题/AI文学叙事革命.md"}, {"source": "人物/陈涛.md", "target": "作品/在群山之间.md"}, {"source": "人物/霍俊明.md", "target": "机构/浙江文学馆.md"}, {"source": "人物/韩少功.md", "target": "事件/大文学观访谈林森.md"}, {"source": "人物/韩少功.md", "target": "主题/大文学观.md"}, {"source": "人物/韩松刚.md", "target": "主题/文学读者.md"}, {"source": "人物/马识途.md", "target": "主题/新大众文艺.md"}, {"source": "人物/高临阳.md", "target": "作品/神不使.md"}, {"source": "人物/高临阳.md", "target": "机构/上海文学.md"}, {"source": "人物/鲁敏.md", "target": "作品/此时此刻.md"}, {"source": "人物/鲁敏.md", "target": "事件/鲁迅文学周上海篇.md"}, {"source": "人物/鲁迅.md", "target": "事件/鲁迅文学周上海篇.md"}, {"source": "人物/鲁迅.md", "target": "事件/关于鲁迅系列讲座.md"}, {"source": "人物/鲁迅.md", "target": "事件/上海文学馆开幕.md"}, {"source": "人物/鲁迅.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "人物/鲁迅.md", "target": "人物/罗岗.md"}, {"source": "人物/麦家.md", "target": "作品/接待奈保尔的两天.md"}, {"source": "人物/黄咏梅.md", "target": "主题/网络文学.md"}, {"source": "人物/黄桂元.md", "target": "机构/天津文学.md"}, {"source": "人物/黄礼孩.md", "target": "作品/犹如夜鹰迁徙.md"}, {"source": "作品/一泓清水入黄河.md", "target": "主题/生态文学.md"}, {"source": "作品/中国新时代文学理论话语建构研究.md", "target": "主题/新大众文艺.md"}, {"source": "作品/亲爱的女孩.md", "target": "人物/霍君.md"}, {"source": "作品/你好青年医生.md", "target": "人物/李琭璐.md"}, {"source": "作品/八千年的凝视.md", "target": "主题/大文学观.md"}, {"source": "作品/劳者歌其事.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "作品/劳者歌其事.md", "target": "主题/新大众文艺.md"}, {"source": "作品/国宝·山鸣谷应.md", "target": "机构/中国当代文学研究.md"}, {"source": "作品/夜奔.md", "target": "人物/指尖.md"}, {"source": "作品/大河源.md", "target": "人物/阿来.md"}, {"source": "作品/大河源.md", "target": "主题/生态文学.md"}, {"source": "作品/大海风.md", "target": "人物/赵德发.md"}, {"source": "作品/大海风.md", "target": "主题/海洋文学.md"}, {"source": "作品/大漠芳华.md", "target": "主题/生态文学.md"}, {"source": "作品/天才游乐场.md", "target": "主题/网络文学.md"}, {"source": "作品/天滋.md", "target": "主题/新大众文艺.md"}, {"source": "作品/天生斯民.md", "target": "人物/柳青.md"}, {"source": "作品/客途.md", "target": "人物/林森.md"}, {"source": "作品/对读：新时代长篇小说十二部.md", "target": "人物/阿来.md"}, {"source": "作品/寻渡.md", "target": "人物/叶剑秀.md"}, {"source": "作品/寻羊记.md", "target": "作品/梵音重响.md"}, {"source": "作品/寻羊记.md", "target": "作品/麦收之后.md"}, {"source": "作品/岭南十三讲.md", "target": "人物/叶兆言.md"}, {"source": "作品/必将有人重写南方.md", "target": "主题/新南方写作.md"}, {"source": "作品/总体性与社会主义文学传统.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "作品/拉夫尔.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "作品/文学的临潭.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "作品/文学的深意.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "作品/文学的深意.md", "target": "人物/徐则臣.md"}, {"source": "作品/文学的风景与思想的风致.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "作品/旅途诗草.md", "target": "人物/杨角.md"}, {"source": "作品/春歌.md", "target": "事件/上海文学馆开幕.md"}, {"source": "作品/春歌.md", "target": "机构/中国当代文学研究.md"}, {"source": "作品/晃树.md", "target": "人物/毕海林.md"}, {"source": "作品/朝向大地.md", "target": "主题/新大众文艺.md"}, {"source": "作品/村超.md", "target": "主题/乡村振兴文学书写.md"}, {"source": "作品/杜秀兰.md", "target": "主题/新大众文艺.md"}, {"source": "作品/杜立特行动大救援.md", "target": "人物/徐锦庚.md"}, {"source": "作品/梦里花落知多少.md", "target": "机构/湖南文学.md"}, {"source": "作品/梵音重响.md", "target": "机构/天津文学.md"}, {"source": "作品/海客行.md", "target": "人物/贺绍俊.md"}, {"source": "作品/海客行.md", "target": "机构/湖南文学.md"}, {"source": "作品/海客行.md", "target": "主题/大文学观.md"}, {"source": "作品/猛犸象.md", "target": "人物/胡性能.md"}, {"source": "作品/猴命.md", "target": "主题/现实主义.md"}, {"source": "作品/猴命.md", "target": "主题/新乡土小说.md"}, {"source": "作品/玫瑰与繁霜.md", "target": "人物/指尖.md"}, {"source": "作品/生命奇迹.md", "target": "人物/朱群英.md"}, {"source": "作品/疾病是一所学校.md", "target": "机构/福建文学.md"}, {"source": "作品/神不使.md", "target": "机构/上海文学.md"}, {"source": "作品/秘密.md", "target": "人物/全勇先.md"}, {"source": "作品/窈窕之章.md", "target": "人物/杨不寒.md"}, {"source": "作品/纯真年代.md", "target": "主题/文学与影视.md"}, {"source": "作品/荒原.md", "target": "主题/巴勒斯坦文学与文学政治.md"}, {"source": "作品/虚室.md", "target": "人物/栗鹿.md"}, {"source": "作品/见世面.md", "target": "人物/董永智.md"}, {"source": "作品/赛坎的老风口.md", "target": "主题/乡村振兴文学书写.md"}, {"source": "作品/重新醒来的一天.md", "target": "人物/谢有顺.md"}, {"source": "作品/闪念.md", "target": "人物/林莽.md"}, {"source": "作品/闪水桥.md", "target": "人物/董永红.md"}, {"source": "作品/陨石博物馆.md", "target": "人物/王奕凯.md"}, {"source": "作品/隐迹.md", "target": "人物/李浩然.md"}, {"source": "作品/风从江上来.md", "target": "主题/生态文学.md"}, {"source": "作品/麦收之后.md", "target": "作品/洗澡.md"}, {"source": "机构/中国左翼作家联盟.md", "target": "事件/第九届鲁迅文学奖.md"}, {"source": "机构/中国当代文学研究.md", "target": "机构/新时代文学研究中心.md"}, {"source": "机构/中国网络文学交流中心.md", "target": "主题/网络文学.md"}, {"source": "机构/中国网络文学交流中心.md", "target": "主题/新大众文艺.md"}, {"source": "机构/人民文学.md", "target": "人物/徐则臣.md"}, {"source": "机构/人民文学.md", "target": "人物/莫言.md"}, {"source": "机构/人民文学.md", "target": "人物/迟子建.md"}, {"source": "机构/天津文学.md", "target": "作品/有意于爱.md"}, {"source": "机构/广西作家协会.md", "target": "机构/漓江文学奖.md"}, {"source": "机构/新时代山乡巨变创作计划.md", "target": "主题/新大众文艺.md"}, {"source": "机构/新时代山乡巨变创作计划.md", "target": "机构/新时代文学攀登计划.md"}, {"source": "机构/新时代文学攀登计划.md", "target": "作品/春歌.md"}, {"source": "机构/新时代文学攀登计划.md", "target": "作品/青云梯.md"}, {"source": "机构/新时代文学攀登计划.md", "target": "主题/大文学观.md"}, {"source": "机构/新时代文学研究中心.md", "target": "主题/大文学观.md"}, {"source": "机构/晋江文学城.md", "target": "主题/网络文学IP转化.md"}, {"source": "机构/晋江文学城.md", "target": "主题/网络文学出海.md"}, {"source": "机构/晋江文学城.md", "target": "机构/阅文集团.md"}, {"source": "机构/木兰书院.md", "target": "主题/乡村振兴文学书写.md"}, {"source": "机构/木兰书院.md", "target": "主题/新大众文艺.md"}, {"source": "机构/民族文学.md", "target": "事件/民族文学大家读刊会.md"}, {"source": "机构/湖南文学.md", "target": "事件/湖南文学创阅中心揭牌.md"}, {"source": "机构/漓江文学奖.md", "target": "主题/中国文学译介.md"}, {"source": "机构/阅文集团.md", "target": "主题/新大众文艺.md"}, {"source": "机构/青年文学.md", "target": "主题/新大众文艺.md"}, {"source": "机构/青年文学.md", "target": "主题/城市文学.md"}, {"source": "概念/人工智能人文学.md", "target": "机构/中国当代文学研究.md"}, {"source": "概念/人工智能人文学.md", "target": "概念/人工智能文学.md"}, {"source": "概念/文学性.md", "target": "主题/大文学观.md"}, {"source": "概念/走向田野.md", "target": "概念/人工智能人文学.md"}, {"source": "概念/走向田野.md", "target": "人物/柳青.md"}, {"source": "流派/寻根文学.md", "target": "人物/冯骥才.md"}], "cat_colors": {"人物": "#4ecdc4", "作品": "#ff6b6b", "主题": "#6c5ce7", "概念": "#e17055", "流派": "#a29bfe", "机构": "#00b894", "事件": "#ffd93d"}}};
+
+// ── 时钟 ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+updateClock(); setInterval(updateClock, 1000);
+
+// ── 状态 ──
+let currentView = 'all';
+let currentYear = '';
+let customFrom = '';
+let customTo = '';
+
+// ── 年份选项 ──
+const years = Object.keys(DATA.stats.by_year).sort();
+const yearSelect = document.getElementById('yearSelect');
+const fromYear = document.getElementById('fromYear');
+const toYear = document.getElementById('toYear');
+years.forEach(y => {
+  yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+  fromYear.innerHTML += `<option value="${y}">${y}</option>`;
+  toYear.innerHTML += `<option value="${y}">${y}</option>`;
+});
+if (years.length) {
+  yearSelect.value = years[years.length - 1];
+  fromYear.value = years[0];
+  toYear.value = years[years.length - 1];
+  currentYear = years[years.length - 1];
+}
+
+// ── 过滤 ──
+function filterByMonth(months) {
+  // months: ["2026-01","2026-02",...] or null for all
+  if (!months) return DATA.events;
+  return DATA.events.filter(e => {
+    if (!e.date) return false;
+    const ym = e.date.slice(0,7);
+    return months.includes(ym);
+  });
+}
+
+function getActiveMonths() {
+  if (currentView === 'all') return null;
+  if (currentView === 'year') {
+    return Object.keys(DATA.stats.by_month).filter(m => m.startsWith(currentYear));
+  }
+  if (currentView === 'custom') {
+    if (!customFrom || !customTo) return null;
+    return Object.keys(DATA.stats.by_month).filter(m => {
+      const y = m.slice(0,4);
+      return y >= customFrom && y <= customTo;
+    });
+  }
+  return null;
+}
+
+function renderStats(months) {
+  // 计算过滤后的统计
+  let totalPages = DATA.stats.total_pages;
+  let totalRaw = DATA.stats.total_raw;
+  let byType = DATA.stats.by_type;
+
+  if (months) {
+    // 按月统计需要从页面数据推算
+    // 简化：按比例估算
+    const allMonths = Object.keys(DATA.stats.by_month);
+    const filteredCount = months.reduce((s,m) => s + (DATA.stats.by_month[m] || 0), 0);
+    const ratio = allMonths.length ? filteredCount / allMonths.length : 1;
+    totalPages = Math.round(DATA.stats.total_pages * Math.min(ratio, 1));
+    byType = {};
+    Object.entries(DATA.stats.by_type).forEach(([k,v]) => {
+      byType[k] = Math.round(v * Math.min(ratio, 1));
+    });
+  }
+
+  let html = '';
+  html += `<div class="stat-card"><div class="num">${totalPages}</div><div class="label">Wiki 页面</div></div>`;
+  html += `<div class="stat-card"><div class="num">${totalRaw}</div><div class="label">原始文档</div></div>`;
+  html += `<div class="stat-card"><div class="num">${DATA.phenomena.length}</div><div class="label">重要现象</div></div>`;
+  html += `<div class="stat-card"><div class="num">${DATA.events.length}</div><div class="label">大事记条目</div></div>`;
+  html += `<div class="stat-card"><div class="num">${years.length}</div><div class="label">覆盖年份</div></div>`;
+  document.getElementById('overview').innerHTML = html;
+
+  // 分类统计
+  let typeHtml = '';
+  const typeColors = {'人物':'#4ecdc4','作品':'#ff6b6b','事件':'#ffd93d','主题':'#6c5ce7','机构':'#00b894','概念':'#e17055','流派':'#a29bfe'};
+  Object.entries(byType).sort((a,b) => b[1]-a[1]).forEach(([k,v]) => {
+    const c = typeColors[k] || '#90a4ae';
+    typeHtml += `<div class="type-chip"><div class="t-num" style="color:${c}">${v}</div><div class="t-label">${k}</div></div>`;
+  });
+  document.getElementById('typeStats').innerHTML = typeHtml;
+}
+
+function renderChart(months) {
+  const allMonths = months || Object.keys(DATA.stats.by_month).sort();
+  const maxVal = Math.max(...allMonths.map(m => DATA.stats.by_month[m] || 0), 1);
+  let html = '';
+  allMonths.forEach(m => {
+    const v = DATA.stats.by_month[m] || 0;
+    const h = Math.max((v / maxVal) * 100, 2);
+    html += `<div class="chart-bar"><div class="bar" style="height:${h}px" title="${m}: ${v} 页"><div class="bar-label">${v}</div></div><div class="month-label">${m.slice(5)}</div></div>`;
+  });
+  document.getElementById('chartBars').innerHTML = html;
+}
+
+function renderPhenomena() {
+  let html = '';
+  DATA.phenomena.forEach(p => {
+    html += `
+      <div class="phenomenon-card" style="--accent:${p.color}">
+        <div class="ph-head">
+          <span class="ph-name">${esc(p.name)}</span>
+          <span class="ph-cat">${esc(p.category)}</span>
+        </div>
+        <div class="ph-desc">${esc(p.description)}</div>
+        <div class="ph-meta">
+          <span>📄 ${p.source_count} 条来源</span>
+          <span>📅 ${p.min_pd || '?'} ~ ${p.max_pd || '?'}</span>
+        </div>
+      </div>`;
+  });
+  document.getElementById('phenomena').innerHTML = html;
+}
+
+function renderEvents(events) {
+  let html = '';
+  events.forEach(ev => {
+    let awardHtml = '';
+    if (ev.awards && ev.awards.length) {
+      awardHtml = '<div style="margin-top:10px;">';
+      ev.awards.forEach(a => {
+        awardHtml += `<div class="award-category">${esc(a.category)}（${a.works.length} 部/人）</div>`;
+        awardHtml += '<table class="award-table"><tr><th>作品/作者</th><th>作者</th></tr>';
+        a.works.forEach(w => {
+          if (w.title) {
+            awardHtml += `<tr><td>${esc(w.title)}</td><td>${esc(w.author)}</td></tr>`;
+          } else {
+            awardHtml += `<tr><td colspan="2">${esc(w.author)}</td></tr>`;
+          }
+        });
+        awardHtml += '</table>';
+      });
+      awardHtml += '</div>';
+    }
+    html += `
+      <div class="event-card">
+        <div class="ev-date">${esc(ev.date || '日期待定')}</div>
+        <div class="ev-body">
+          <h3>${esc(ev.name)}</h3>
+          <div class="ev-cat">${esc(ev.category)} · ${ev.source_count} 条来源</div>
+          <div class="ev-desc">${esc(ev.description)}</div>
+          ${awardHtml}
+        </div>
+      </div>`;
+  });
+  document.getElementById('events').innerHTML = html || '<div style="color:#607d8b;padding:20px;">该时间段暂无大事记数据</div>';
+}
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function render() {
+  const months = getActiveMonths();
+  renderStats(months);
+  renderChart(months);
+  renderPhenomena();
+  const events = filterByMonth(months);
+  renderEvents(events);
+}
+
+// ── 视图切换 ──
+document.querySelectorAll('.view-btns button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.view-btns button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentView = btn.dataset.view;
+    document.getElementById('yearControls').style.display = currentView === 'year' ? 'inline-block' : 'none';
+    document.getElementById('customControls').style.display = currentView === 'custom' ? 'inline-flex' : 'none';
+    render();
+  });
+});
+document.getElementById('yearSelect').addEventListener('change', e => {
+  currentYear = e.target.value;
+  render();
+});
+function applyCustomRange() {
+  customFrom = document.getElementById('fromYear').value;
+  customTo = document.getElementById('toYear').value;
+  render();
+}
+
+// ── 关系图谱（力导向图） ──
+const graphCanvas = document.getElementById('graphCanvas');
+const gctx = graphCanvas.getContext('2d');
+const graphTooltip = document.getElementById('graphTooltip');
+let activeCat = null;       // null=全部, 或分类名
+let minDegree = 1;          // 最小度数过滤
+let gNodes = [], gEdges = [];
+let gSim = null;
+let graphScale = 1;
+let graphTranslate = {x: 0, y: 0};
+let dragging = false, dragStart = null;
+
+// 初始化图谱
+function initGraph() {
+  const allNodes = DATA.graph.nodes;
+  const allEdges = DATA.graph.edges;
+  // 过滤节点 & 边（按分类和最低关联度）
+  const filteredIdSet = new Set();
+  allNodes.forEach(n => {
+    if (activeCat && n.cat !== activeCat) return;
+    if (n.degree < minDegree) return;
+    filteredIdSet.add(n.id);
+  });
+  gNodes = allNodes.filter(n => filteredIdSet.has(n.id));
+  gEdges = allEdges.filter(e => filteredIdSet.has(e.source) && filteredIdSet.has(e.target));
+
+  // 自动提高阈值避免卡顿
+  const MAX_RENDER = 1600;
+  while (gNodes.length > MAX_RENDER && minDegree < 12) {
+    minDegree++;
+    filteredIdSet.clear();
+    allNodes.forEach(n => {
+      if (activeCat && n.cat !== activeCat) return;
+      if (n.degree < minDegree) return;
+      filteredIdSet.add(n.id);
+    });
+    gNodes = allNodes.filter(n => filteredIdSet.has(n.id));
+    gEdges = allEdges.filter(e => filteredIdSet.has(e.source) && filteredIdSet.has(e.target));
+  }
+
+  // 圆形初始布局
+  gSim = gNodes.map((n, i) => {
+    const angle = (2 * Math.PI * i) / Math.max(gNodes.length, 1);
+    const r = Math.sqrt(gNodes.length) * 20;
+    return { ...n, x: r * Math.cos(angle), y: r * Math.sin(angle), vx: 0, vy: 0 };
+  });
+  posMapCache = null;
+  gSim.forEach(n => {
+    n.x += (Math.random() - 0.5) * 40;
+    n.y += (Math.random() - 0.5) * 40;
+  });
+
+  graphScale = 1;
+  graphTranslate = {x: 0, y: 0};
+  renderGraphToolbar();
+  drawGraph();
+  requestAnimationFrame(() => { graphStep(120); });
+}
+
+function renderGraphToolbar() {
+  const toolbar = document.getElementById('graphToolbar');
+  const cats = Object.keys(DATA.graph.cat_colors);
+  let html = `<label style="font-size:12px;color:#90a4ae;">分类：</label>`;
+  html += `<button class="cat-btn ${!activeCat ? 'active' : ''}" data-cat="" onclick="setCat('')">全部</button>`;
+  cats.forEach(c => {
+    const color = DATA.graph.cat_colors[c];
+    html += `<button class="cat-btn ${activeCat === c ? 'active' : ''}" data-cat="${c}" style="--c:${color}" onclick="setCat('${c}')">${c}</button>`;
+  });
+  html += `<label style="font-size:12px;color:#90a4ae;margin-left:10px;">最低关联度：</label>`;
+  html += `<input type="range" min="1" max="12" value="${minDegree}" oninput="this.nextElementSibling.textContent=this.value;setMinDegree(+this.value)">`;
+  html += `<span style="font-size:12px;color:#90a4ae;">${minDegree}</span>`;
+  html += `<span class="graph-info">${gNodes.length} 节点 · ${gEdges.length} 边 · 拖动查看</span>`;
+  toolbar.innerHTML = html;
+}
+
+function setCat(c) {
+  activeCat = c || null;
+  initGraph();
+}
+
+function setMinDegree(d) {
+  minDegree = d;
+  initGraph();
+}
+
+// 力导向模拟（固定迭代次数后停止）
+function graphStep(steps) {
+  if (!gSim.length) { drawGraph(); return; }
+  const reps = steps || 4;
+  let posMap = null;
+  const buildPos = () => {
+    if (!posMap) {
+      posMap = {};
+      gSim.forEach(n => posMap[n.id] = n);
+    }
+    return posMap;
+  };
+  for (let iter = 0; iter < reps; iter++) {
+    const pm = buildPos();
+    // 斥力（所有节点对）
+    for (let i = 0; i < gSim.length; i++) {
+      for (let j = i + 1; j < gSim.length; j++) {
+        const a = gSim[i], b = gSim[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let d2 = dx * dx + dy * dy;
+        if (d2 < 1) d2 = 1;
+        const d = Math.sqrt(d2);
+        const force = 4000 / d2;
+        const f = Math.min(force, 10);
+        const fx = (dx / d) * f, fy = (dy / d) * f;
+        a.vx -= fx; a.vy -= fy;
+        b.vx += fx; b.vy += fy;
+      }
+    }
+    // 引力（弹簧）
+    const k = 0.02;
+    gEdges.forEach(e => {
+      const a = pm[e.source], b = pm[e.target];
+      if (!a || !b) return;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.sqrt(dx * dx + dy * dy) || 1;
+      const targetDist = 45;
+      const f = (d - targetDist) * k;
+      const fx = (dx / d) * f, fy = (dy / d) * f;
+      a.vx += fx; a.vy += fy;
+      b.vx -= fx; b.vy -= fy;
+    });
+    // 更新位置
+    gSim.forEach(n => {
+      n.vx *= 0.85; n.vy *= 0.85;
+      n.x += n.vx; n.y += n.vy;
+    });
+  }
+  drawGraph();
+}
+
+let posMapCache = null;
+function posMapGet(id) {
+  if (!posMapCache) {
+    posMapCache = {};
+    gSim.forEach(n => posMapCache[n.id] = n);
+  }
+  return posMapCache[id];
+}
+
+// 绘制
+function drawGraph() {
+  const W = graphCanvas.width, H = graphCanvas.height;
+  if (!W || !H || !gSim || !gSim.length) return;
+  gctx.clearRect(0, 0, W, H);
+
+  gctx.save();
+  gctx.translate(W / 2 + graphTranslate.x, H / 2 + graphTranslate.y);
+  gctx.scale(graphScale, graphScale);
+
+  // 边
+  gctx.strokeStyle = 'rgba(120, 130, 180, 0.25)';
+  gctx.lineWidth = 1;
+  gEdges.forEach(e => {
+    const a = posMapGet(e.source), b = posMapGet(e.target);
+    if (!a || !b) return;
+    gctx.beginPath();
+    gctx.moveTo(a.x, a.y);
+    gctx.lineTo(b.x, b.y);
+    gctx.stroke();
+  });
+
+  // 节点
+  const maxDeg = Math.max(...gSim.map(n => n.degree), 1);
+  gSim.forEach(n => {
+    const area = 6 + (n.degree / maxDeg) * 22;
+    gctx.beginPath();
+    gctx.arc(n.x, n.y, Math.sqrt(area * 2.5), 0, Math.PI * 2);
+    gctx.fillStyle = n.color;
+    gctx.globalAlpha = 0.85;
+    gctx.fill();
+    gctx.globalAlpha = 1;
+  });
+
+  gctx.restore();
+}
+
+// 交互：缩放（滚轮）
+graphCanvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  graphScale = Math.max(0.2, Math.min(5, graphScale * delta));
+  drawGraph();
+}, {passive: false});
+
+// 交互：拖拽平移
+graphCanvas.addEventListener('mousedown', e => {
+  dragging = true;
+  dragStart = {x: e.clientX, y: e.clientY};
+  graphCanvas.style.cursor = 'grabbing';
+});
+window.addEventListener('mousemove', e => {
+  if (dragging) {
+    graphTranslate.x += e.clientX - dragStart.x;
+    graphTranslate.y += e.clientY - dragStart.y;
+    dragStart = {x: e.clientX, y: e.clientY};
+    drawGraph();
+  }
+});
+window.addEventListener('mouseup', () => { dragging = false; graphCanvas.style.cursor = 'grab'; });
+
+// 交互：悬停提示
+graphCanvas.addEventListener('mousemove', e => {
+  if (dragging) return;
+  const rect = graphCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const cx = (mx - rect.width / 2 - graphTranslate.x) / graphScale;
+  const cy = (my - rect.height / 2 - graphTranslate.y) / graphScale;
+  const maxDeg = Math.max(...gSim.map(n => n.degree), 1);
+  let hit = null, hitDist = 1e9;
+  gSim.forEach(n => {
+    const d = Math.hypot(n.x - cx, n.y - cy);
+    const r = Math.sqrt((6 + (n.degree / maxDeg) * 22) * 2.5);
+    if (d < r * 1.4 && d < hitDist) { hit = n; hitDist = d; }
+  });
+  if (hit) {
+    graphTooltip.style.display = 'block';
+    graphTooltip.style.left = (e.clientX - rect.left + 14) + 'px';
+    graphTooltip.style.top = (e.clientY - rect.top + 14) + 'px';
+    graphTooltip.innerHTML = `<div class="tt-name">${esc(hit.name)}</div>` +
+      `<div class="tt-cat">${esc(hit.cat)} · ${hit.src_count} 条来源</div>` +
+      `<div class="tt-deg">关联度 ${hit.degree} · ${hit.id}</div>`;
+  } else {
+    graphTooltip.style.display = 'none';
+  }
+});
+graphCanvas.addEventListener('mouseleave', () => { graphTooltip.style.display = 'none'; });
+
+// 画布尺寸自适应
+function sizeGraphCanvas() {
+  const rect = graphCanvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  if (graphCanvas.width !== Math.round(rect.width * dpr) || graphCanvas.height !== Math.round(rect.height * dpr)) {
+    graphCanvas.width = Math.round(rect.width * dpr);
+    graphCanvas.height = Math.round(rect.height * dpr);
+    gctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawGraph();
+  }
+}
+window.addEventListener('resize', sizeGraphCanvas);
+
+// ── 初始渲染 ──
+render();
+sizeGraphCanvas();
+initGraph();
+</script>
+</body>
+</html>
